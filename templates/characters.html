@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="search-grid" id="character">
+        <div class="search-item">
+            <label for="character-bday">Character's Birthday:</label><br>
+            <input type="number" id="character-bday-day" name="character-bday-day" onchange="searchCharacter(true)" min=1>
+            <input type="number" id="character-bday-month" name="character-bday-month" onchange="searchCharacter(true)" min=1>
+            <input type="number" id="character-bday-year" name="character-bday-year" onchange="searchCharacter(true)" min=1>
+        </div>
+    </div>
+
+    <div id="current-search-options">
+    </div>
+
+    <div class="main-page-grid-container"></div>
+
+    <script>
+
+        let pageNumber = 1;
+
+        document.addEventListener('scroll', e => {
+            console.log(document.documentElement.scrollTop)
+          if (document.documentElement.scrollTop >= 1500 * pageNumber) {
+            searchCharacter(false);
+          }
+        })
+
+        let rank = 0
+
+        function searchCharacter(replaceSearch) {
+            if (replaceSearch) {
+                pageNumber = 1;
+                rank = 0
+            } else {
+                pageNumber++;
+            }
+
+            const dataToSend = {
+                pageNumber: pageNumber,
+                birthYear: document.getElementById('character-bday-year').value,
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '/search_character',
+                contentType: 'application/json;charset=UTF-8',
+                data: JSON.stringify(dataToSend),
+
+                success: function(result){
+                    console.log(result)
+                    let div = document.getElementsByClassName('main-page-grid-container')[0];
+                      if (replaceSearch) {
+                          div.replaceChildren();
+                      }
+                    
+                    for (let i = 0; i < result.length; i++) {
+                        rank++
+
+                        //let classes = document.getElementsByClassName('item'); 
+                        //let endpoint = classes[classes.length - 1];
+                        let element = document.createElement('div');
+                        let title = '';
+                        element.className = 'item anime';
+
+                        let popUpStuff = document.createElement('div');
+                        popUpStuff.className = 'pop-up-information'
+                        popUpStuff.innerHTML = `${title} ${result[i].popularity}`
+
+                        element.innerHTML = `<img src="${result[i].image.large}"><br>${result[i].name.full}`;
+
+                        //element.appendChild(popUpStuff);
+
+                        div.appendChild(element);
+
+                        popUpStuff.style.right = element.style.right;
+                        popUpStuff.style.top = element.style.top;
+                    }
+                }
+
+              });
+        }
+    </script>
+{% endblock %}

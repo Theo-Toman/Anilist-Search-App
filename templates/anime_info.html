@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2>{{title}}</h2>
+    <img src="{{image}}">
+    <h3>Relations</h3>
+    <div class="anime-page-info">
+        <div class="anime-relations-grid">
+            {% for relation in relations %}
+                <div class="item anime">
+                    <img src="{{relation.node.coverImage.medium}}">
+                    <p>{{relation.node.title.romaji}}</p>
+                    <p>{{relation.relationType}}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+{% endblock %}
