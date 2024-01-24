@@ -1,158 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
 
-    <div class="search-grid anime">
-        <div class="search-item">
-            <label for="Search">Search: </label><br>
-            <input type="text" id="search" name="search" onchange="searchAnime(true)">
-        </div>
-        <div class="search-item">
-            <label for="pop-option">Popularity is: :</label><br>
-            <select id="pop-option" name="pop-option" onchange="searchAnime(true)">
-                <option value=""></option>
-                <option value="popularity_greater">Greater Than</option>
-                <option value="popularity_lesser">Less Than</option>
-            </select>
-            <input type="number" id="pop-num" name="popnum" onchange="searchAnime(true)" min=1>
-            
-        </div>
-        <div class="search-item">
-            <label for="average-score-option">Average score is:</label><br>
-            <select id="average-score-option" name="average-score-option" onchange="searchAnime(true)">
-                <option value=""></option>
-                <option value="averageScore_greater">Greater Than</option>
-                <option value="averageScore_lesser">Less Than</option>
-            </select>
-            <input type="number" id="average-score-num" name="average-score-num" onchange="searchAnime(true)" min=1 max=100>
-        </div>
-        
-        <div class="search-item">
-            <label for="format-option">Format:</label><br>
-            <select id="format-option" name="format-option" onchange="searchAnime(true)">
-                <option value="">All</option>
-                <option value="TV">TV</option>
-                <option value="TV_SHORT">TV Short</option>
-                <option value="MOVIE">Movie</option>
-                <option value="SPECIAL">Special</option>
-                <option value="OVA">OVA</option>
-                <option value="ONA">ONA</option>
-            </select>
-        </div>
-
-        <div class="search-item">
-            <label for="media-source-option">Source Material:</label><br>
-            <select id="media-source-option" name="media-source-option" onchange="searchAnime(true)">
-                <option value="">All</option>
-                <option value="ORIGINAL">Original</option>
-                <option value="MANGA">Manga</option>
-                <option value="LIGHT_NOVEL">Light Novel</option>
-                <option value="VISUAL_NOVEL">Visual Novel</option>
-                <option value="VIDEO_GAME">Video Game</option>
-                <option value="NOVEL">Novel</option>
-            </select>
-        </div>
-
-        <div class="search-item">
-            <label for="airing-date">Date:</label><br>
-            <label for="airing-date-year">Year:</label><br>
-            <input type="number" id="airing-date-year" name="airing-date-year" onchange="searchAnime(true)" min=1>
-            <label for="airing-date-season">Season:</label><br>
-            <select id="airing-date-season" name="airing-date-season" onchange="searchAnime(true)">
-                <option value="">ALL</option>
-                <option value="WINTER">Winter</option>
-                <option value="SPRING">Spring</option>
-                <option value="SUMMER">Summer</option>
-                <option value="FALL">Fall</option>
-            </select>
-        </div>
-        
-        <div class="search-item">
-            <label for="genre-option">Genres:</label><br>
-            <div class="search-dropdown">
-                <input type="search" class="option-search" id="genre-option-search" name="genre-option-search" oninput="getDropDownSearchResults('genre-option-search')">
-                <div class="search-dropdown-content genre-search">
-                    {% for genre in genres %}
-                        <button class="genres-list" onclick="addToSearchList('{{genre}}', 'genres')">{{genre}}</button>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
-        <div class="search-item">
-            <label for="relation-option">Relations:</label><br>
-            <div class="search-dropdown">
-                <input type="search" class="option-search" id="relation-option-search" name="relation-option-search" oninput="getDropDownSearchResults('relation-option-search')">
-                <div class="search-dropdown-content relation-search">
-                        <button class="relation-list" onclick="addToSearchList('ADAPTATION', 'relations')">Adaption</button>
-                        <button class="relation-list" onclick="addToSearchList('PREQUEL', 'relations')">Prequal</button>
-                        <button class="relation-list" onclick="addToSearchList('SEQUEL', 'relations')">Sequel</button>
-                        <button class="relation-list" onclick="addToSearchList('PARENT', 'relations')">Parent</button>
-                        <button class="relation-list" onclick="addToSearchList('SIDE_STORY', 'relations')">Side Story</button>
-                        <button class="relation-list" onclick="addToSearchList('CHARACTER', 'relations')">Character</button>
-                        <button class="relation-list" onclick="addToSearchList('SUMMERY', 'relations')">Summery</button>
-                        <button class="relation-list" onclick="addToSearchList('ALTERNATIVE', 'relations')">Alternative</button>
-                        <button class="relation-list" onclick="addToSearchList('SPIN_OFF', 'relations')">Spin Off</button>
-                        <button class="relation-list" onclick="addToSearchList('OTHER', 'relations')">Other</button>
-                        <button class="relation-list" onclick="addToSearchList('SOURCE', 'relations')">Source</button>
-                        <button class="relation-list" onclick="addToSearchList('COMPILATION', 'relations')">Compilation</button>
-                        <button class="relation-list" onclick="addToSearchList('CONTAINS', 'relations')">Contains</button>
-                </div>
-            </div>
-        </div>
-        
-        <!--<div class="search-item">
-            <label for="tag-option">Tags:</label><br>
-            <div class="search-dropdown">
-                <input type="search" class="option-search" id="tag-option-search" name="tag-option-search" oninput="getDropDownSearchResults('tag-option-search')">
-                <div class="search-dropdown-content">
-                    {% for tag in tags %}
-                        <button class="tag-list" onclick="addToSearchList('{{tag.name}}')">{{tag.name}}</button>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>-->
-
-        <div class="search-item">
-            <label for="studio-option">Studios:</label><br>
-            <div class="search-dropdown">
-                <input type="search" class="option-search" id="studio-option-search" name="studio-option-search" oninput="searchStudios()">
-                <div class="search-dropdown-content studio-search">
-        
-                </div>
-            </div>
-        </div>
-        
-        <div class="search-item">
-            <label for="sort-option-cat">Sorting Order:</label><br>
-            <select id="sort-option-cat" name="sort-option-cat" onchange="searchAnime(true)">
-                <option value="POPULARITY">Popularity</option>
-                <option value="SCORE">Score</option>
-                <option value="TRENDING">Trending</option>
-                <option value="FAVOURITES">Favourites</option>
-                <option value="EPISODES">Episodes</option>
-                <option value="DURATION">Duration</option>
-            </select>
-            
-            <select id="sort-option-order" name="sort-option-order" onchange="searchAnime(true)">
-                <option value="_DESC">Desending</option>
-                <option value="">Ascending</option>
-            </select>
-        </div>
-        
-    </div>
-    
-    <div id="current-search-options">
-    </div>
-
-    <div class="main-page-grid-container"></div>
+{% include 'anime_search_template.html' %}
 
     <script>
+        function getSearchInfo(replaceSearch) {
+            searchAnime(replaceSearch);
+        }
+        
         function addToSearchBox(searchBoxId, valueToAdd) {
             document.getElementById(searchBoxId).value = valueToAdd;
             searchAnime(true);
         }
-            function searchStudios() {
-                var query = `
+        function searchStudios() {
+            var query = `
                 query (
                     $page: Int,
                     $perPage: Int,
@@ -177,7 +38,7 @@
             `;
     
             // Define our query variables and values that will be used in the query request
-                console.log(document.getElementById('studio-option-search').value)
+            console.log(document.getElementById('studio-option-search').value)
             var variables = {
                 page: 1,
                 perPage: 10,
@@ -186,19 +47,19 @@
     
             // Define the config we'll need for our Api request
             var url = 'https://graphql.anilist.co',
-                options = {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        query: query,
-                        variables: variables
-                    })
-                };
+            options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    variables: variables
+                })
+            };
 
-                console.log(fetch(url, options))
+            console.log(fetch(url, options))
     
             // Make the HTTP Api request
             fetch(url, options).then(handleResponse)
@@ -224,6 +85,10 @@
                     element.addEventListener("click", function () {addToSearchBox('studio-option-search', data[i].name)})
 
                     div.appendChild(element);
+                }
+
+                if (document.getElementById('studio-option-search').value == "") {
+                    searchAnime(true);
                 }
             }
     
@@ -349,12 +214,6 @@
                     }
                     break
             }
-            
-            
-            console.log(genreSearchListInclude)
-            console.log(genreSearchListUninclude)
-            console.log(includeRelations)
-            console.log(unincludeRelations)
             searchAnime(true);
         }
 
@@ -392,48 +251,157 @@
 
         let pageNumber = 1;
         
-        document.addEventListener('scroll', e => {
-            console.log(document.documentElement.scrollTop)
-          if (document.documentElement.scrollTop >= 1500 * pageNumber) {
-            searchAnime(false);
-          }
-        })
+        
 
         let rank = 0
+        let colour = [239, 93, 96]
+
+        let prevColours = []
+
+        let requestInProcess = false;
+
+        let backedUpRequest = false;
         
         function searchAnime(replaceSearch) {
+            let div = document.getElementsByClassName('main-page-grid-container')[0];
+            
             if (replaceSearch) {
+                div.replaceChildren();
                 pageNumber = 1;
                 rank = 0
+                colour = [239, 93, 96]
             } else {
                 pageNumber++;
             }
-
-            if (!replaceSearch && document.getElementById('studio-option-search').value != "") {
+            if (requestInProcess) {
+                if (replaceSearch) {
+                    backedUpRequest = true;
+                }
                 return;
             }
-
+            
             const sortBy = document.getElementById("sort-option-cat").value + document.getElementById("sort-option-order").value;
-            console.log(sortBy)
-
+            
             const dataToSend = {
                 search: document.getElementById("search").value,
-                popOption: document.getElementById("pop-option").value,
-                popNum: document.getElementById("pop-num").value,
-                formatOption: document.getElementById("format-option").value,
+                popularity_greater: parseInt(document.getElementById("popularity-num-greater").value),
+                popularity_lesser: parseInt(document.getElementById("popularity-num-lesser").value),
+                format: document.getElementById("format-option").value,
                 pageNumber: pageNumber,
                 sortBy: sortBy,
-                searchGenresInclude: JSON.stringify(genreSearchListInclude),
-                searchGenresUninclude: JSON.stringify(genreSearchListUninclude),
+                genre_in: JSON.stringify(genreSearchListInclude),
+                genre_not_in: JSON.stringify(genreSearchListUninclude),
                 includeRelations: JSON.stringify(includeRelations),
                 unincludeRelations: JSON.stringify(unincludeRelations),
-                averageScoreOption: document.getElementById("average-score-option").value,
-                averageScoreNum: document.getElementById("average-score-num").value,
-                mediaSource: document.getElementById("media-source-option").value,
+                averageScore_greater: parseInt(document.getElementById("average-score-num-greater").value),
+                averageScore_lesser: parseInt(document.getElementById("average-score-num-lesser").value),
+                episodes_greater: parseInt(document.getElementById("episode-count-greater").value),
+                episodes_lesser: parseInt(document.getElementById("episode-count-lesser").value),
+                source: document.getElementById("media-source-option").value,
                 season: document.getElementById("airing-date-season").value,
-                startingYear: parseInt(document.getElementById("airing-date-year").value),
-                studio: document.getElementById('studio-option-search').value
+                studio: document.getElementById('studio-option-search').value,
             }
+
+            let yearGreater = document.getElementById("year-greater").value
+            if (yearGreater != "") {
+                dataToSend['yearGreater'] = parseInt(yearGreater + "0000")
+            }
+
+            let yearLesser = document.getElementById("year-lesser").value
+            if (yearLesser != "") {
+                dataToSend['yearLesser'] = parseInt(yearLesser + "0000")
+            }
+
+            const statusGreaters = document.getElementsByClassName('status-greater');
+
+            const distrabutionStatusGreaterThan = {
+
+            }
+
+            let totalStatusGreaterSearchAmount = 0
+            let multiplyStatusGreaterSearchAmountBy = 25
+
+            for (let i = 0; i < 6; i++) {
+                console.log(statusGreaters[i]);
+                const stat = statusGreaters[i].id.split("-")[2].toUpperCase();
+                const value = statusGreaters[i].value;
+                if (value) {
+                    distrabutionStatusGreaterThan[stat] = parseInt(value);
+                    totalStatusGreaterSearchAmount += parseInt(value)
+                } else {
+                    switch (stat) {
+                        case "COMPLETED":
+                            multiplyStatusGreaterSearchAmountBy -= 0.06;
+                            break;
+                        case "CURRENT":
+                            multiplyStatusGreaterSearchAmountBy -= 0.06;
+                            break;
+                        case "PAUSED":
+                            multiplyStatusGreaterSearchAmountBy -= 0.16;
+                            break;
+                        case "DROPPED":
+                            multiplyStatusGreaterSearchAmountBy -= 0.16;
+                            break;
+                        case "PLANNING":
+                            multiplyStatusGreaterSearchAmountBy -= 0.16;
+                            break;
+                        case "REPEATING":
+                            multiplyStatusGreaterSearchAmountBy -= 0.4;
+                            break;
+                    }
+                }
+            }
+
+            if (totalStatusGreaterSearchAmount > 0) {
+                dataToSend['distrabutionStatusGreaterThan'] = JSON.stringify(distrabutionStatusGreaterThan)
+            }
+
+            const statusLessers = document.getElementsByClassName('status-lesser');
+
+            const distrabutionStatusLesserThan = {
+
+            }
+
+            let totalStatusLesserSearchAmount = 0
+            let multiplyStatusLesserSearchAmountBy = 0
+
+            for (let i = 0; i < 6; i++) {
+                const stat = statusLessers[i].id.split("-")[2].toUpperCase();
+                const value = statusLessers[i].value;
+                if (value) {
+                    distrabutionStatusLesserThan[stat] = parseInt(value);
+                    totalStatusLesserSearchAmount += parseInt(value)
+                    switch (stat) {
+                        case "COMPLETED":
+                            multiplyStatusLesserSearchAmountBy = 75;
+                            break;
+                        case "CURRENT":
+                            multiplyStatusLesserSearchAmountBy = 75;
+                            break;
+                        case "PAUSED":
+                            multiplyStatusLesserSearchAmountBy = 75;
+                            break;
+                        case "DROPPED":
+                            multiplyStatusLesserSearchAmountBy = 100;
+                            break;
+                        case "PLANNING":
+                            multiplyStatusLesserSearchAmountBy = 100;
+                            break;
+                        case "REPEATING":
+                            multiplyStatusLesserSearchAmountBy = 140;
+                            break;
+                    }
+                }
+            }
+
+            if (totalStatusLesserSearchAmount > 0) {
+                dataToSend["distrabutionStatusLesserThan"] = JSON.stringify(distrabutionStatusLesserThan)
+                if (dataToSend['popularityNumGreater'] == "" && dataToSend['popularityNumLesser'] == "") {
+                    dataToSend['popularityNumLesser'] = totalStatusLesserSearchAmount * multiplyStatusLesserSearchAmountBy
+                }
+            }
+
+            requestInProcess = true;
             
             $.ajax({
                 type: 'POST',
@@ -442,49 +410,116 @@
                 data: JSON.stringify(dataToSend),
               
                 success: function(result){
+                    console.log("requested")
+                    if (backedUpRequest) {
+                        requestInProcess = false;
+                        backedUpRequest = false;
+                        searchAnime(true);
+                        return;
+                    }
                     console.log(result)
                     pageNumber = result['page']
                     result = result['media_list']
-                    let div = document.getElementsByClassName('main-page-grid-container')[0];
-                      if (replaceSearch) {
-                          div.replaceChildren();
-                      }
+                    
                     console.log(result)
+                    hexCodesUsed = []
                     for (let i = 0; i < result.length; i++) {
+                        
                         rank++
+                        let ranking = rank;
 
                         //let classes = document.getElementsByClassName('item'); 
                         //let endpoint = classes[classes.length - 1];
                         let element = document.createElement('div');
                         let title = '';
-                        element.className = 'item anime';
-                        
-                        if (result[i].title.english != "" || result[i].title.english != null) {
+                        element.className = 'anime search-item';
+
+                        if (result[i].title.english !== null) {
                             title = result[i].title.english;
-                        } else if (result[i].title.romaji != "" || result[i].title.romaji != null) {
+                        } else if (result[i].title.romaji !== null) {
                             title = result[i].title.romaji;
                         } else {
                             title = result[i].title.native;
                             console.log(result[i].title)
                         }
 
-                        let popUpStuff = document.createElement('div');
-                        popUpStuff.className = 'pop-up-information'
-                        popUpStuff.innerHTML = `${title} ${result[i].popularity}`
-
                         element.addEventListener("onload", function() {replaceLoadingClass(rank - 1)});
 
-                        element.innerHTML = `${rank} : pop ${result[i].popularity}<a href='anime_info/${result[i].id}')><img src="${result[i].coverImage.large}"><br>${title}</a>`;
+                        `if (result[i].rankings.length > 0) {
+                            if (sortBy.includes('POPULARITY')) {
+                                if  (result[i].rankings.length > 1 && 'allTime' in result[i].rankings[1] && result[i].rankings[1].allTime) {
+                                    ranking = result[i].rankings[1].rank
+                                } else {
+                                    ranking = null
+                                }
+                            }
+                            else if (sortBy.includes('SCORE')) {
+                                if  ('allTime' in result[i].rankings[0] && result[i].rankings[0].allTime) {
+                                    ranking = result[i].rankings[0].rank
+                                } else {
+                                    ranking = null
+                                }
+                            }
+                        } else {
+                            ranking = null
+                        }`
 
-                        //element.appendChild(popUpStuff);
+                        let popUpStuff = document.createElement('div');
+                        popUpStuff.className = 'pop-up-information';
+                        popUpStuff.innerHTML = `<p>${title}</p>
+                                                <p>Popularity: ${result[i].popularity}</p>
+                                                <p>Score: ${result[i].averageScore}%</p>
+                                                <p>Favourites: ${result[i].favourites}</p>
+                                                <p>${result[i].format} ${result[i].episodes} Episodes</p>
+                                                <a href='anime_info/${result[i].id}' target="_blank"> View More</a>`
+                        
+                        let rank_number = document.createElement('div');
+                        rank_number.className = 'rank_number';
+                        rank_number.innerHTML = ranking
+                        rank_number.style.backgroundColor = `rgb(${colour[0]}, ${colour[1]}, ${colour[2]})`;
 
-                        div.appendChild(element);
+                        if (ranking < 1000) {
+                            rank_number.style.width = "1.5em";
+                            rank_number.style.height = "1.5em";
+                        } else {
+                            rank_number.style.width = "2em";
+                            rank_number.style.height = "2em";
+                        }
 
-                        popUpStuff.style.right = element.style.right;
-                        popUpStuff.style.top = element.style.top;
+                        element.appendChild(rank_number);
+
+                        let animeImageLink = document.createElement('a');
+                        animeImageLink.innerHTML = `<img src="${result[i].coverImage.large}">`;
+                        animeImageLink.href = `anime_info/${result[i].id}`
+                        animeImageLink.target = "_blank"
+                        element.appendChild(animeImageLink);
+                        
+                        let p = document.createElement('p');
+                        p.innerHTML = title;
+                        element.appendChild(p);
+
+                        let container = document.createElement('div');
+                        container.className = 'anime-container';
+
+                        container.appendChild(element);
+                        
+                        container.appendChild(popUpStuff);
+
+                        div.appendChild(container);
+
+                        let colourIndex = Math.floor((Math.random() * 3))
+
+                        colour[colourIndex] += 4
+
+                        if (colour[colourIndex] > 254) {
+                            colour[colourIndex] = 0
+                        }
+
                     }
+                    
+                    requestInProcess = false;
+                    
                 }
-                  
               });
         }
 
@@ -492,5 +527,15 @@
             console.log(document.getElementsByClassName('item anime'))
             document.getElementsByClassName('item anime')[index].classList.remove('image-loading');
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            getSearchInfo(true);
+        }, false);
+
+        $(window).scroll(function () {
+           if ($(window).scrollTop() >= $(document).height() - $(window).height() - 175) {
+               getSearchInfo(false);
+           }
+        });
     </script>
 {% endblock %}

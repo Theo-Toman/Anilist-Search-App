@@ -1,0 +1,145 @@
+.search-grid {
+    margin-left: 3.5%;
+    margin-right: 3.5%;
+    display: grid;
+    grid-template-columns: repeat(7, 14.29%);
+}
+
+.current-search-options {
+    display: grid;
+    grid-template-columns: repeat(10, 10%);
+    margin: 4rem;
+}
+
+.main-page-grid-container {
+    margin-top: 3vw;
+    margin-left: 3%;
+    margin-right: 3%;
+    display: grid;
+    grid-template-columns: repeat(8, 12.5%);
+}
+
+ #header-anime-page-info {
+    margin-left: 15%;
+    margin-right: 15%;
+    display: grid;
+    grid-template-columns: 215px auto;
+    column-gap: 5%;
+    grid-template-rows: auto;
+    margin-top: 400px;
+}
+
+#description {
+    margin-top: 1em;
+    border: black solid 2px;
+    grid-column-start: 2;
+    grid-row-start: 1;
+    border-radius: 1.25em;
+}
+
+#anime-container {
+    position: relative;
+    grid-row-start: 1;
+    margin-bottom: 0%;
+    margin-top: -190px;
+}
+#anime-container img {
+    border-radius: 5px;
+    box-shadow: 1px 1px;
+    border: solid 1px black;
+    max-width:100%;
+    max-height: 25rem;
+}
+
+
+ #info-column {
+    border: solid black 2px;
+    width: 100%;
+    grid-row-start: 2;
+}
+
+.anime-data-sections {
+    grid-row-start: 2;
+    grid-column-start: 2;
+}
+
+.anime-relations-grid {
+    display: grid;
+    grid-template-columns: repeat(7, auto);
+    grid-template-rows: repeat(6, auto);
+}
+
+
+
+.anime-page-info #info-column .info-row .info-title {
+    text-decoration: bold;
+}
+
+.anime-page-info #info-column .info-row .info {
+    color: red;
+}
+
+@media screen and (max-width: 1225px) {
+    .search-grid {
+        display: grid;
+        grid-template: repeat(8, auto) / repeat(4, 25%);
+    }
+
+    .main-page-grid-container {
+        display: grid;
+        grid-template: repeat(8, auto) / repeat(4, 25%);
+    }
+
+    .item {
+
+    }
+    img {
+        width: 100%;
+        height: auto;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    .search-grid {
+        display: grid;
+        grid-template: repeat(8, auto) / repeat(2, 50%);
+    }
+
+    .main-page-grid-container {
+        display: grid;
+        grid-template: repeat(8, auto) / repeat(2, 50%);
+    }
+
+    .item {
+
+    }
+    img {
+        width: 100%;
+        height: auto;
+    }
+}
+
+
+@media screen and (max-width: 450px) {
+    .search-grid {
+        display: grid;
+        grid-template: repeat(16, auto) / repeat(1, 100%);
+    }
+
+    .main-page-grid-container {
+        display: grid;
+        grid-template: repeat(16, auto) / repeat(1, 100%);
+    }
+
+    .item {
+
+    }
+    img {
+        width: 75%;
+        height: auto;
+    }
+}
+
+
+
+

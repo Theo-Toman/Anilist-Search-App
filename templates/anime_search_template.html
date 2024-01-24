@@ -1,0 +1,210 @@
+<div class="search-grid anime">
+    <div class="search-item">
+        <label for="Search" class="search-option-title">Search: </label><br>
+        <input type="text" id="search" name="search" oninput="getSearchInfo(true)">
+    </div>
+    <div class="search-item">
+        <label for="average-score-option" class="search-option-title">Popularity is:</label><br>
+        <label for="popularity-num-greater">Greater Than: </label><br>
+        <input type="number" id="popularity-num-greater" name="popularity-num-greater" oninput="getSearchInfo(true)" min=1 max=100><br>
+        <label for="popularity-num-lesser">Lesser Than: </label><br>
+        <input type="number" id="popularity-num-lesser" name="popularity-num-lesser" oninput="getSearchInfo(true)" min=1 max=100>
+    </div>
+
+    <div class="search-item">
+        <label for="average-score-option" class="search-option-title">Average score is:</label><br>
+        <label for="average-score-num-greater">Greater Than: </label><br>
+        <input type="number" id="average-score-num-greater" name="average-score-num-greater" oninput="getSearchInfo(true)" min=1 max=100><br>
+        <label for="average-score-num-lesser">Lesser Than: </label><br>
+        <input type="number" id="average-score-num-lesser" name="average-score-num-lesser" oninput="getSearchInfo(true)" min=1 max=100>
+    </div>
+
+    <div class="search-item">
+        <label for="episode-count-option" class="search-option-title">Episode count is:</label><br>
+        <label for="episode-count-greater">Greater Than: </label><br>
+        <input type="number" id="episode-count-greater" name="episode-count-greater" oninput="getSearchInfo(true)" min=1><br>
+        <label for="episode-count-lesser">Lesser Than: </label><br>
+        <input type="number" id="episode-count-lesser" name="episode-count-lesser" oninput="getSearchInfo(true)" min=1>
+    </div>
+
+    <div class="search-item">
+        <label for="format-option" class="search-option-title">Format:</label><br>
+        <select id="format-option" name="format-option" oninput="getSearchInfo(true)">
+            <option value="">All</option>
+            <option value="TV">TV</option>
+            <option value="TV_SHORT">TV Short</option>
+            <option value="MOVIE">Movie</option>
+            <option value="SPECIAL">Special</option>
+            <option value="OVA">OVA</option>
+            <option value="ONA">ONA</option>
+        </select>
+    </div>
+
+    <div class="search-item">
+        <label for="media-source-option" class="search-option-title">Source Material:</label><br>
+        <select id="media-source-option" name="media-source-option" oninput="getSearchInfo(true)">
+            <option value="">All</option>
+            <option value="ORIGINAL">Original</option>
+            <option value="MANGA">Manga</option>
+            <option value="LIGHT_NOVEL">Light Novel</option>
+            <option value="VISUAL_NOVEL">Visual Novel</option>
+            <option value="VIDEO_GAME">Video Game</option>
+            <option value="NOVEL">Novel</option>
+        </select>
+    </div>
+
+    <div class="search-item">
+        <label for="airing-date" class="search-option-title">Date:</label><br>
+        <label for="airing-date-year">Year:</label><br>
+        <label for="year-greater">Greater Than: </label><br>
+        <input type="number" id="year-greater" name="year-greater" oninput="getSearchInfo(true)" min=1><br>
+        <label for="year-lesser">Lesser Than: </label><br>
+        <input type="number" id="year-lesser" name="year-lesser" oninput="getSearchInfo(true)" min=1>
+        <label for="airing-date-season">Season:</label><br>
+        <select id="airing-date-season" name="airing-date-season" oninput="getSearchInfo(true)">
+            <option value="">ALL</option>
+            <option value="WINTER">Winter</option>
+            <option value="SPRING">Spring</option>
+            <option value="SUMMER">Summer</option>
+            <option value="FALL">Fall</option>
+        </select>
+    </div>
+
+    <div class="search-item">
+        <label for="genre-option" class="search-option-title">Genres:</label><br>
+        <div class="search-dropdown">
+            <input type="search" class="option-search" id="genre-option-search" name="genre-option-search" oninput="getDropDownSearchResults('genre-option-search')">
+            <div class="search-dropdown-content genre-search">
+                {% for genre in genres %}
+                    <button class="genres-list" onclick="addToSearchList('{{genre}}', 'genres')">{{genre}}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="search-item">
+        <label for="relation-option" class="search-option-title">Relations:</label><br>
+        <div class="search-dropdown">
+            <input type="search" class="option-search" id="relation-option-search" name="relation-option-search" oninput="getDropDownSearchResults('relation-option-search')">
+            <div class="search-dropdown-content relation-search">
+                    <button class="relation-list" onclick="addToSearchList('ADAPTATION', 'relations')">Adaption</button>
+                    <button class="relation-list" onclick="addToSearchList('PREQUEL', 'relations')">Prequal</button>
+                    <button class="relation-list" onclick="addToSearchList('SEQUEL', 'relations')">Sequel</button>
+                    <button class="relation-list" onclick="addToSearchList('PARENT', 'relations')">Parent</button>
+                    <button class="relation-list" onclick="addToSearchList('SIDE_STORY', 'relations')">Side Story</button>
+                    <button class="relation-list" onclick="addToSearchList('CHARACTER', 'relations')">Character</button>
+                    <button class="relation-list" onclick="addToSearchList('SUMMERY', 'relations')">Summery</button>
+                    <button class="relation-list" onclick="addToSearchList('ALTERNATIVE', 'relations')">Alternative</button>
+                    <button class="relation-list" onclick="addToSearchList('SPIN_OFF', 'relations')">Spin Off</button>
+                    <button class="relation-list" onclick="addToSearchList('OTHER', 'relations')">Other</button>
+                    <button class="relation-list" onclick="addToSearchList('SOURCE', 'relations')">Source</button>
+                    <button class="relation-list" onclick="addToSearchList('COMPILATION', 'relations')">Compilation</button>
+                    <button class="relation-list" onclick="addToSearchList('CONTAINS', 'relations')">Contains</button>
+            </div>
+        </div>
+    </div>
+
+    <!--<div class="search-item">
+        <label for="tag-option">Tags:</label><br>
+        <div class="search-dropdown">
+            <input type="search" class="option-search" id="tag-option-search" name="tag-option-search" oninput="getDropDownSearchResults('tag-option-search')">
+            <div class="search-dropdown-content">
+                {% for tag in tags %}
+                    <button class="tag-list" onclick="addToSearchList('{{tag.name}}')">{{tag.name}}</button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>-->
+
+    <div class="search-item">
+        <label for="studio-option" class="search-option-title">Studios:</label><br>
+        <div class="search-dropdown">
+            <input type="search" class="option-search" id="studio-option-search" name="studio-option-search" oninput="searchStudios()">
+            <div class="search-dropdown-content studio-search">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="search-item">
+        <label for="stat-dis-order" class="stat-dis-order-title">Stat Distrabution:</label><br>
+        <div id="main-seach-pop-up-container">
+            <div class="search-pop-up-container">
+                <label for="stat-dis-completed-option" class="search-option-title">Completed count is:</label><br>
+                <label for="stat-dis-completed-count-greater">Greater Than: </label><br>
+                <input type="number" class="status-greater" id="stat-dis-completed-count-greater" name="stat-dis-completed-count-greater" onchange="getSearchInfo(true)" min=1><br>
+                <label for="stat-dis-completed-count-lesser">Lesser Than: </label><br>
+                <input type="number" class="status-lesser"id="stat-dis-completed-count-lesser" name="stat-dis-completed-count-lesser" onchange="getSearchInfo(true)" min=1>
+            </div>
+            <div class="search-pop-up-container">
+                <label for="stat-dis-planning-option" class="search-option-title">Planning count is:</label><br>
+                <label for="stat-dis-planning-count-greater">Greater Than: </label><br>
+                <input type="number" class="status-greater" id="stat-dis-planning-count-greater" name="stat-dis-planning-count-greater" onchange="getSearchInfo(true)" min=1><br>
+                <label for="stat-dis-planning-count-lesser">Lesser Than: </label><br>
+                <input type="number" class="status-lesser"id="stat-dis-planning-count-lesser" name="stat-dis-planning-count-lesser" onchange="getSearchInfo(true)" min=1>
+            </div>
+            <div class="search-pop-up-container">
+                <label for="stat-dis-current-option" class="search-option-title">Current count is:</label><br>
+                <label for="stat-dis-current-count-greater">Greater Than: </label><br>
+                <input type="number" class="status-greater" id="stat-dis-current-count-greater" name="stat-dis-current-count-greater" onchange="getSearchInfo(true)" min=1><br>
+                <label for="stat-dis-completed-count-lesser">Lesser Than: </label><br>
+                <input type="number" class="status-lesser"id="stat-dis-current-count-lesser" name="stat-dis-current-count-lesser" onchange="getSearchInfo(true)" min=1>
+            </div>
+            <div class="search-pop-up-container">
+                <label for="stat-dis-dropped-option" class="search-option-title">Dropped count is:</label><br>
+                <label for="stat-dis-dropped-count-greater">Greater Than: </label><br>
+                <input type="number" class="status-greater" id="stat-dis-dropped-count-greater" name="stat-dis-dropped-count-greater" onchange="getSearchInfo(true)" min=1><br>
+                <label for="stat-dis-dropped-count-lesser">Lesser Than: </label><br>
+                <input type="number" class="status-lesser"id="stat-dis-dropped-count-lesser" name="stat-dis-dropped-count-lesser" onchange="getSearchInfo(true)" min=1>
+            </div>
+            <div class="search-pop-up-container">
+                <label for="stat-dis-paused-option" class="search-option-title">Paused count is:</label><br>
+                <label for="stat-dis-paused-count-greater">Greater Than: </label><br>
+                <input type="number" class="status-greater" id="stat-dis-paused-count-greater" name="stat-dis-paused-count-greater" onchange="getSearchInfo(true)" min=1><br>
+                <label for="stat-dis-paused-count-lesser">Lesser Than: </label><br>
+                <input type="number" class="status-lesser"id="stat-dis-paused-count-lesser" name="stat-dis-paused-count-lesser" onchange="getSearchInfo(true)" min=1>
+            </div>
+            <div class="search-pop-up-container">
+                <label for="stat-dis-repeating-option" class="search-option-title">Repeating count is:</label><br>
+                <label for="stat-dis-paused-repeating-greater">Greater Than: </label><br>
+                <input type="number" class="status-greater" id="stat-dis-repeating-count-greater" name="stat-dis-repeating-count-greater" onchange="getSearchInfo(true)" min=1><br>
+                <label for="stat-dis-paused-repeating-lesser">Lesser Than: </label><br>
+                <input type="number" class="status-lesser"id="stat-dis-repeating-count-lesser" name="stat-dis-repeating-count-lesser" onchange="getSearchInfo(true)" min=1>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-item">
+        <label for="sort-option-cat" class="search-option-title">Sorting Order:</label><br>
+        <select id="sort-option-cat" name="sort-option-cat" oninput="getSearchInfo(true)">
+            <option value="POPULARITY">Popularity</option>
+            <option value="SCORE">Score</option>
+            <option value="TRENDING">Trending</option>
+            <option value="FAVOURITES">Favourites</option>
+            <option value="EPISODES">Episodes</option>
+            <option value="DURATION">Duration</option>
+        </select>
+
+        <select id="sort-option-order" name="sort-option-order" oninput="getSearchInfo(true)">
+            <option value="_DESC">Desending</option>
+            <option value="">Ascending</option>
+        </select>
+    </div>
+
+    {% if is_staff_anime == "T" %}
+        <div class="search-item">
+            <label for="staff-work-option" class="search-option-title">Staff Work:</label><br>
+            <select id="staff-work-option" name="staff-work-option" oninput="getSearchInfo(true)">
+                <option value="ANIMES">Animes</option>
+                <option value="MANGAS">Mangas</option>
+                <option value="CHARACTERS">Characters</option>
+            </select>
+        </div>
+    {% endif %}
+
+</div>
+
+<div id="current-search-options">
+</div>
+
+<div class="main-page-grid-container"></div>

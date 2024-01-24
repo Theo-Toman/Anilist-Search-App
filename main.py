@@ -20,48 +20,31 @@ app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'your_secret_key_here'
 app.config["SESSION_PERMANENT"] = True
-"""login_manager = LoginManager()
-login_manager.init_app(app)
-
-basedir = os.path.abspath(os.path.dirname(__file__))
-
-app.config['SQLALCHEMY_DATABASE_URI'] =\
-        'sqlite:///' + os.path.join(basedir, 'database.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
-
-db = SQLAlchemy(app)
-
-
-app.app_context().push()
-with app.app_context():
-    db.create_all()"""
-
-
-class GetAnime:
+class QueryAPI:
 
     def __init__(self):
         self.media_normal_search = '''
             query (
-                $id: Int,
                 $page: Int,
-                $perPage: Int,
                 $search: String,
                 $popularity_lesser: Int,
                 $popularity_greater: Int,
                 $averageScore_lesser: Int,
                 $averageScore_greater: Int,
                 $sort: [MediaSort],
-                $isAdult: Boolean,
                 $format: MediaFormat, 
                 $genre_in: [String],
                 $genre_not_in: [String],
                 $source: MediaSource,
                 $season: MediaSeason,
-                $seasonYear: Int,
+                $startDate_greater: FuzzyDateInt,
+                $startDate_lesser: FuzzyDateInt,
+                $episodes_greater: Int,
+                $episodes_lesser: Int,
             ) {
-                Page (page: $page, perPage: $perPage) {
+                Page (page: $page, perPage: 50) {
                     pageInfo {
                         total
                         currentPage
@@ -70,26 +53,33 @@ class GetAnime:
                         perPage
                     }
                     media (
-                        id: $id, 
-                        search: $search, 
+                        search: $search,
                         popularity_lesser: $popularity_lesser, 
                         popularity_greater: $popularity_greater, 
                         averageScore_lesser: $averageScore_lesser, 
                         averageScore_greater: $averageScore_greater, 
+                        episodes_lesser: $episodes_lesser, 
+                        episodes_greater: $episodes_greater,
                         type: ANIME, 
                         sort: $sort, 
-                        isAdult: $isAdult, 
+                        isAdult: false, 
                         format: $format, 
                         genre_in: $genre_in, 
                         genre_not_in: $genre_not_in,
                         source: $source,
                         season: $season,
-                        seasonYear: $seasonYear
-    
+                        startDate_greater: $startDate_greater,
+                        startDate_lesser: $startDate_lesser,
+                        
                     ) {
                         id
                         popularity
                         averageScore
+                        trending
+                        favourites
+                        episodes
+                        duration
+                        format
                         title {
                             romaji
                             english
@@ -106,6 +96,23 @@ class GetAnime:
                                 relationType (version: 2)
                             }
                         }
+                        startDate {
+                            year
+                            month
+                            day
+                        }
+                        siteUrl
+                        rankings {
+                            rank
+                            allTime
+                            type
+                        }
+                        stats {
+                            statusDistribution {
+                                status
+                                amount
+                            }
+                        }
                     }
                 }
             }
@@ -116,8 +123,9 @@ class GetAnime:
                 $perPage: Int, 
                 $studioName: String,
                 $animePage: Int, 
+                $sort: [MediaSort],
             ) {
-                Page (page: $page, perPage: $perPage) {
+                Page (page: $page, perPage: 1) {
                     pageInfo {
                         total
                         currentPage
@@ -127,13 +135,135 @@ class GetAnime:
                     }
                     studios (search: $studioName) {
                         media (
-                            page: $animePage, perPage: $perPage
+                            page: $animePage, perPage: $perPage, sort: $sort
                         ) {
-                                nodes {
+                            nodes {
+                                id
+                                popularity
+                                averageScore
+                                trending
+                                favourites
+                                episodes
+                                duration
+                                genres
+                                season
+                                seasonYear
+                                format
+                                title {
+                                    romaji
+                                    english
+                                }
+                                coverImage {
+                                    extraLarge
+                                    large
+                                    medium
+                                    color
+                                }
+                                relations {
+                                    edges {
+                                        relationType
+                                    }
+                                }
+                                siteUrl
+                                rankings {
+                                    rank
+                                    allTime
+                                    type
+                                }
+                                startDate {
+                                    year
+                                    month
+                                    day
+                                }
+                                stats {
+                                    statusDistribution {
+                                        status
+                                        amount
+                                    }
+                                }
     
+                            }
+    
+                        }
+    
+                    }
+    
+                }
+            }
+            '''
+
+        self.staff_query = '''
+            query (
+                $page: Int, 
+                $perPage: Int, 
+                $sort: [StaffSort]
+            ) {
+                Page (page: $page, perPage: $perPage) {
+                    pageInfo {
+                        total
+                        currentPage
+                        lastPage
+                        hasNextPage
+                        perPage
+                    }
+                    staff (
+                        sort: $sort,
+                    ) {
+                        id
+                        favourites
+                        primaryOccupations
+                        image {
+                            large
+                        }
+                        name {
+                            full
+                        }
+                        
+                    }
+                    
+                }
+    
+            }
+            '''
+        self.staff_anime_query = '''
+                query (
+                    $staffID: Int,
+                    $page: Int, 
+                    $sort: [MediaSort],
+                ) {
+                    Page (page: 1, perPage: 1) {
+                        pageInfo {
+                            total
+                            currentPage
+                            lastPage
+                            hasNextPage
+                            perPage
+                        }
+                        staff (
+                            id: $staffID,
+                        ) {
+                            id
+                            favourites
+                            primaryOccupations
+                            image {
+                                large
+                            }
+                            name {
+                                full
+                            }
+                            staffMedia (
+                                page: $page, perPage: 50, sort: $sort
+                            ) {
+                                edges {
+                                    staffRole
+                                    node {
                                         id
                                         popularity
                                         averageScore
+                                        trending
+                                        favourites
+                                        episodes
+                                        duration
                                         genres
                                         season
                                         seasonYear
@@ -141,6 +271,7 @@ class GetAnime:
                                         title {
                                             romaji
                                             english
+                                            native
                                         }
                                         coverImage {
                                             extraLarge
@@ -153,59 +284,171 @@ class GetAnime:
                                                 relationType
                                             }
                                         }
-    
+                                        siteUrl
+                                        rankings {
+                                            rank
+                                            allTime
+                                            type
+                                        }
+                                        startDate {
+                                            year
+                                            month
+                                            day
+                                        }
+                                        stats {
+                                            statusDistribution {
+                                                status
+                                                amount
+                                            }
+                                        }
+                                    }
                                 }
-    
+                            }
                         }
     
                     }
     
                 }
+                '''
+        self.staff_character_query = '''
+            query (
+                $staffID: Int,
+                $page: Int, 
+                $sort: [CharacterSort],
+            ) {
+                Page (page: 1, perPage: 1) {
+                    pageInfo {
+                        total
+                        currentPage
+                        lastPage
+                        hasNextPage
+                        perPage
+                    }
+                    staff (
+                        id: $staffID,
+                    ) {
+                        id
+                        favourites
+                        primaryOccupations
+                        image {
+                            large
+                        }
+                        name {
+                            full
+                        }
+                        characters (
+                            page: $page, perPage: 25, sort: $sort,
+                        ) {
+                            edges {
+                                node {
+                                    name {
+                                        full
+                                    }
+                                    image {
+                                        large
+                                    }
+                                }
+                                media {
+                                    title {
+                                        romaji
+                                        english
+                                        native
+                                    }
+                                }
+                            }
+                        }
+                    }
+    
+                }
+    
             }
             '''
 
     def get_anime(self, data_variables):
+        manual_searchs = ['distrabutionStatusGreaterThan', 'distrabutionStatusLesserThan', 'includeRelations', 'unincludeRelations']
+        
+        manual_search = False
+        
         variables = {
             'page': data_variables["pageNumber"],
-            'perPage': 50,
-            'isAdult': False,
             'sort': [data_variables["sortBy"]],
         }
+        
+        for key in data_variables:
+            if key == "pageNumber" or key == "sortBy" or key == "studio":
+                continue
+            elif isinstance(data_variables[key], int):
+                variables[key] = data_variables[key]
+            elif isinstance(data_variables[key], str) and data_variables[key] != "":
+                variables[key] = data_variables[key]
+            elif key in manual_searchs and len(data_variables[key]) > 0:
+                manual_search = True
+            elif isinstance(data_variables[key], list) and len(data_variables[key]) > 0:
+                variables[key] = data_variables[key]
 
-        if data_variables["search"] != "":
-            variables["search"] = data_variables["search"]
-
-        if data_variables["popOption"] != "" and data_variables["popNum"] != "":
-            variables[data_variables["popOption"]] = data_variables["popNum"]
-
-        if data_variables["formatOption"] != "":
-            variables['format'] = data_variables["formatOption"]
-
-        if data_variables["mediaSource"] != "":
-            variables['source'] = data_variables["mediaSource"]
-
-        if data_variables["startingYear"] != "":
-            variables['seasonYear'] = data_variables["startingYear"]
-
-        if data_variables["season"] != "":
-            variables['season'] = data_variables["season"]
-
-        if data_variables["averageScoreOption"] != "" and data_variables[
-                "averageScoreNum"] != "":
-            variables[data_variables["averageScoreOption"]] = data_variables[
-                "averageScoreNum"]
-
-        if len(data_variables["searchGenresInclude"]) > 0:
-            variables['genre_in'] = data_variables["searchGenresInclude"]
-
-        if len(data_variables["searchGenresUninclude"]) > 0:
-            variables['genre_not_in'] = data_variables["searchGenresUninclude"]
-
+        url = 'https://graphql.anilist.co'
+        print(variables)
+        
+        
         media_list = []
-        if data_variables['includeRelations'] == [] and data_variables[
-                'unincludeRelations'] == []:
-            url = 'https://graphql.anilist.co'
 
+        if manual_search:
+            flag = True
+            while flag:
+                response = requests.post(url,
+                 json={
+                     'query': self.media_normal_search,
+                     'variables': variables
+                 })
+                
+                if response.status_code == 200:
+                    # Parse the response JSON data
+                    data = response.json()
+
+                    print(len(data['data']['Page']['media']),
+                          variables['page'])
+
+                    print()
+                    print(data_variables['includeRelations'])
+                    print(data_variables['unincludeRelations'])
+
+                    temp_media_list = data['data']['Page']['media']
+
+                    if data_variables['includeRelations'] != []:
+                        temp_media_list = self.must_include_relations(
+                            temp_media_list,
+                            data_variables['includeRelations'])
+
+                    if data_variables['unincludeRelations'] != []:
+                        temp_media_list = self.must_not_include_relations(
+                            temp_media_list,
+                            data_variables['unincludeRelations'])
+                        
+                    if 'distrabutionStatusGreaterThan' in data_variables and data_variables['distrabutionStatusGreaterThan'] != {}:
+                        temp_media_list = self.stat_status_greater_than(
+                            temp_media_list,
+                            data_variables['distrabutionStatusGreaterThan'])
+                        
+                    if 'distrabutionStatusLesserThan' in data_variables and data_variables['distrabutionStatusLesserThan'] != {}:
+                        temp_media_list = self.stat_status_lesser_than(
+                            temp_media_list,
+                            data_variables['distrabutionStatusLesserThan'])
+
+                    media_list += temp_media_list
+
+                    if len(media_list) >= 45 or len(
+                            data['data']['Page']
+                        ['media']) == 0:
+                        flag = False
+                    else:
+                        variables['page'] += 1
+
+                else:
+                    print("oops")
+                    print(response.json())
+                    flag = False
+
+        else:
             response = requests.post(url,
                                      json={
                                          'query': self.media_normal_search,
@@ -222,54 +465,85 @@ class GetAnime:
             else:
                 print("oops")
                 print(response.json())
-        else:
-            flag = True
-            while flag:
-                url = 'https://graphql.anilist.co'
-                print(variables)
-                response = requests.post(url,
-                                         json={
-                                             'query': self.media_normal_search,
-                                             'variables': variables
-                                         })
-
-                if response.status_code == 200:
-                    # Parse the response JSON data
-                    data = response.json()
-
-                    print()
-                    print(data_variables['includeRelations'])
-                    print(data_variables['unincludeRelations'])
-                    
-                    temp_media_list = data['data']['Page']['media']
-                    
-                    if data_variables['includeRelations'] != []:
-                        temp_media_list = self.must_include_relations(
-                            temp_media_list,
-                            data_variables['includeRelations'])
-                        
-                    if data_variables['unincludeRelations'] != []:
-                        temp_media_list = self.must_not_include_relations(
-                            temp_media_list,
-                            data_variables['unincludeRelations'])
-
-                    media_list += temp_media_list
-
-                    if len(media_list) >= 50 or (data['data']['Page']['media']) == 0 or variables['page'] > 50:
-                        flag = False
-                    else:
-                        variables['page'] += 1
-
-                else:
-                    print("oops")
-                    print(response.json())
-                    flag = False
+            
 
         return media_list, variables['page']
 
-    def get_all_studio_anime(self, studio, variables):
+
+    def loop_for_manual_seaches(self, data_variables, animes):
+        for key in data_variables:
+            #4
+            if key == "pageNumber" or key == "search" or key == "sortBy" or key == "studio":
+                continue
+            #5
+            if animes == []:
+                break
+            elif isinstance(data_variables[key], int):
+                #6
+                if 'year' in key:
+                    #7
+                    if 'lesser' in key:
+                        animes = self.must_be_lesser_than_year(animes, data_variables[key])
+                    #8
+                    else:
+                        animes = self.must_be_greater_than_year(animes, data_variables[key])
+                #9
+                elif 'lesser' in key:
+                    animes = self.must_be_lesser_than(animes, data_variables[key], key[:-8])
+                #10
+                else:
+                    animes = self.must_be_greater_than(animes, data_variables[key], key[:-8])
+
+            #11
+            elif isinstance(data_variables[key], str) and data_variables[key] != "":
+                animes = self.must_include_single(animes, data_variables[key], key)
+            #12
+            elif isinstance(data_variables[key], list) and len(data_variables[key]) > 0:
+                #13
+                if 'Relations' in key:
+                    #14
+                    if 'un' in key:
+                        animes = self.must_not_include_relations(animes, data_variables[key])
+                    #15
+                    else:
+                        animes = self.must_include_relations(animes, data_variables[key])
+                #16
+                else:
+                    #17
+                    if "not" in key:
+                        animes = self.must_not_include_list(animes, data_variables[key], key)
+                    #18
+                    else:
+                        animes = self.must_include_list(animes, data_variables[key], key)
+            #19
+            elif isinstance(data_variables[key], dict) and len(data_variables[key]) > 0:
+                #20
+                if "distrabutionStatus" in key:
+                    #21
+                    if "Greater" in key:
+                        animes = self.stat_status_greater_than(animes, data_variables[key])
+                    #22
+                    else:
+                        animes = self.stat_status_lesser_than(animes, data_variables[key])
+
+        animes = self.remove_duplicates(animes)
+        return animes
+
+
+    def get_all_studio_anime(self, data_variables):
+
+        variables = {
+            'page': 1,
+            'perPage': 50,
+            'isAdult': False,
+            'sort': [data_variables["sortBy"]],
+            'animePage': data_variables["pageNumber"],
+            'studioName': data_variables['studio']
+        }
+
         media_list = []
         flag = True
+        #1
         while flag:
             print(variables)
             url = 'https://graphql.anilist.co'
@@ -279,19 +553,30 @@ class GetAnime:
                                          'query': self.media_studio_search,
                                          'variables': variables
                                      })
+            #2
             if response.status_code == 200:
                 data = response.json()
-                if data['data']['Page']['studios'][0]['media']['nodes'] == []:
+                media_list = data['data']['Page']['studios'][0]['media'][
+                    'nodes']
+
+                media_list += self.loop_for_manual_seaches(data_variables, media_list)
+
+                print(len(media_list))
+                #23
+                if len(media_list) >= 45 or data['data']['Page']['studios'][0][
+                        'media']['nodes'] == []:
                     flag = False
+                #24
                 else:
-                    media_list += data['data']['Page']['studios'][0]['media'][
-                        'nodes']
                     variables['animePage'] += 1
+
+            #25
             else:
                 flag = False
                 print("oops")
                 print(response.json())
-        return media_list
+
+        return media_list, data_variables["pageNumber"]
 
     def must_include_list(self, animes, must_include, catagory):
         for must_include_index in range(0, len(must_include)):
@@ -306,11 +591,36 @@ class GetAnime:
 
         return animes
 
+    def must_not_include_list(self, animes, must_include, catagory):
+        for must_include_index in range(0, len(must_include)):
+            anime_index = 0
+            while anime_index < len(animes):
+                if must_include[must_include_index] in animes[anime_index][
+                        catagory]:
+                    animes.pop(anime_index)
+                    print('anime removed')
+                else:
+                    anime_index += 1
+
+        return animes
+
     def must_include_single(self, animes, must_include, catagory):
         if must_include != "":
             anime_index = 0
             while anime_index < len(animes):
                 if must_include != animes[anime_index][catagory]:
+                    print(animes[anime_index]['season'], must_include)
+                    animes.pop(anime_index)
+                    print('anime removed')
+                else:
+                    anime_index += 1
+        return animes
+
+    def must_not_include_single(self, animes, must_include, catagory):
+        if must_include != "":
+            anime_index = 0
+            while anime_index < len(animes):
+                if must_include == animes[anime_index][catagory]:
                     print(animes[anime_index]['season'], must_include)
                     animes.pop(anime_index)
                     print('anime removed')
@@ -342,6 +652,129 @@ class GetAnime:
                         break
                 else:
                     anime_index += 1
+    
+        return animes
+
+    def must_be_greater_than(self, animes, min_num, option):
+        anime_index = 0
+        while anime_index < len(animes):
+
+            if animes[anime_index][option] is None:
+                current_num = 0
+            else:
+                current_num = animes[anime_index][option]
+
+            if current_num <= min_num:
+                animes.pop(anime_index)
+            else:
+                anime_index += 1
+
+        return animes
+
+    def must_be_lesser_than(self, animes, min_num, option):
+        anime_index = 0
+        while anime_index < len(animes):
+
+            if animes[anime_index][option] is None:
+                current_num = 0
+            else:
+                current_num = animes[anime_index][option]
+
+            if current_num >= min_num:
+                animes.pop(anime_index)
+            else:
+                anime_index += 1
+
+        return animes
+
+    def must_be_greater_than_year(self, animes, year):
+        anime_index = 0
+        while anime_index < len(animes):
+            if animes[anime_index]["startDate"]['year'] is None:
+                current_num = 0
+            else:
+                current_num = animes[anime_index]["startDate"]['year']
+
+            print(current_num, year, current_num <= year)
+
+            if current_num <= year:
+                animes.pop(anime_index)
+            else:
+                anime_index += 1
+
+        return animes
+
+    def must_be_lesser_than_year(self, animes, year):
+        anime_index = 0
+        while anime_index < len(animes):
+            if animes[anime_index]["startDate"]['year'] is None:
+                current_num = 0
+            else:
+                current_num = animes[anime_index]["startDate"]['year']
+
+            if current_num >= year:
+                animes.pop(anime_index)
+            else:
+                anime_index += 1
+
+        return animes
+
+    def stat_status_greater_than(self, animes, statuses):
+        anime_index = 0
+        while anime_index < len(animes):
+            for stat_index in range(
+                    0,
+                    len(animes[anime_index]['stats']['statusDistribution'])):
+                if animes[anime_index]['stats']['statusDistribution'][
+                        stat_index]['status'] in statuses:
+                    if animes[anime_index]['stats']['statusDistribution'][
+                            stat_index]['amount'] <= statuses[
+                                animes[anime_index]['stats']
+                                ['statusDistribution'][stat_index]['status']]:
+                        animes.pop(anime_index)
+                        break
+            else:
+                anime_index += 1
+
+        return animes
+
+    def stat_status_lesser_than(self, animes, statuses):
+        anime_index = 0
+        while anime_index < len(animes):
+            #print(anime_index, "<", len(animes), "=", anime_index < len(animes))
+            for stat_index in range(
+                    0,
+                    len(animes[anime_index]['stats']['statusDistribution'])):
+                if animes[anime_index]['stats']['statusDistribution'][
+                        stat_index]['status'] in statuses:
+                    print(
+                        animes[anime_index]['stats']['statusDistribution']
+                        [stat_index]['amount'], ">=",
+                        statuses[animes[anime_index]['stats']
+                                 ['statusDistribution'][stat_index]['status']],
+                        "=", animes[anime_index]['stats']['statusDistribution']
+                        [stat_index]['amount'] >=
+                        statuses[animes[anime_index]['stats']
+                                 ['statusDistribution'][stat_index]['status']])
+
+                    if animes[anime_index]['stats']['statusDistribution'][
+                            stat_index]['amount'] >= statuses[
+                                animes[anime_index]['stats']
+                                ['statusDistribution'][stat_index]['status']]:
+                        animes.pop(anime_index)
+                        break
+            else:
+                anime_index += 1
+
+        return animes
+
+    def remove_duplicates(self, animes):
+        index = 0
+        while index < len(animes):
+            if animes.count(animes[index]) > 1:
+                animes.remove(animes[index])
+                index -= 1
+            index += 1
 
         return animes
 
@@ -358,22 +791,249 @@ class GetAnime:
                         animes.pop(index + 1)
                         flag = False
                     else:
-
                         subtract_by += 1
 
         return animes
 
+    def get_staff(self, data_variables):
+        variables = {
+            'page': data_variables["pageNumber"],
+            'perPage': 50,
+            'isAdult': False,
+            'sort': [data_variables["sortBy"]],
+        }
 
-get_anime = GetAnime()
+        staff_list = []
+
+        flag = True
+
+        while flag:
+            url = 'https://graphql.anilist.co'
+
+            response = requests.post(url,
+                                     json={
+                                         'query': self.staff_query,
+                                         'variables': variables
+                                     })
+
+            if response.status_code == 200:
+                # Parse the response JSON data
+                data = response.json()
+
+                temp_staff_list = data['data']['Page']['staff']
+
+                if data_variables['favouritesGreater'] != '':
+                    temp_staff_list = self.must_be_greater_than(
+                        temp_staff_list,
+                        int(data_variables['favouritesGreater']), "favourites")
+
+                if data_variables['favouritesLesser'] != '':
+                    temp_staff_list = self.must_be_lesser_than(
+                        temp_staff_list,
+                        int(data_variables['favouritesLesser']), "favourites")
+
+                staff_list += temp_staff_list
+
+                if len(staff_list) > 49:
+                    flag = False
+                else:
+                    variables['page'] += 1
+
+                print(variables)
+
+            else:
+                print("oops")
+                print(response.json())
+                flag = False
+
+        return staff_list, variables
+
+    def get_staff_anime(self, data_variables):
+
+        variables = {
+            'page': data_variables["pageNumber"],
+            'isAdult': False,
+            'staffID': data_variables["id"],
+            'sort': [data_variables["sortBy"]],
+        }
+
+        media_list = []
+        character_list = []
+        flag = True
+        name = ''
+
+        counter = 0
+        while flag:
+            counter += 1
+            #print(variables)
+            url = 'https://graphql.anilist.co'
+
+            response = requests.post(url,
+                                     json={
+                                         'query': self.staff_anime_query,
+                                         'variables': variables
+                                     })
+            if response.status_code == 200:
+                data = response.json()
+                name = data['data']['Page']['staff'][0]['name']['full']
+                print(data['data']['Page']['staff'][0]['staffMedia']['edges'])
+                if len(media_list) > 45 or data['data']['Page']['staff'][0][
+                        'staffMedia']['edges'] == []:
+                    flag = False
+                else:
+                    media_list += data['data']['Page']['staff'][0][
+                        'staffMedia']['edges']
+                    variables['page'] += 1
+
+            else:
+                flag = False
+                print("oops")
+                print(response.json())
+
+            if counter == 1:
+                first_data = data
+
+        if data_variables["season"] != "":
+            media_list = self.must_include_single(media_list,
+                                                  data_variables["season"],
+                                                  "season")
+
+        if data_variables["yearGreater"] != "":
+            media_list = self.must_be_greater_than_year(
+                media_list, int(data_variables["yearGreater"]))
+
+        if data_variables["yearLesser"] != "":
+            media_list = self.must_be_lesser_than_year(
+                media_list, int(data_variables["yearLesser"]))
+
+        if data_variables["formatOption"] != "":
+            media_list = self.must_include_single(
+                media_list, data_variables["formatOption"], "format")
+
+        if data_variables["mediaSource"] != "":
+            pass
+
+        if data_variables["averageScoreNumGreater"] != "":
+            media_list = self.must_be_greater_than(
+                media_list, int(data_variables["averageScoreNumGreater"]),
+                'averageScore')
+
+        if data_variables["averageScoreNumLesser"] != "":
+            media_list = self.must_be_lesser_than(
+                media_list, int(data_variables["averageScoreNumLesser"]),
+                'averageScore')
+
+        if data_variables["popularityNumGreater"] != "":
+            media_list = self.must_be_greater_than(
+                media_list, int(data_variables["popularityNumGreater"]),
+                'popularity')
+
+        if data_variables["popularityNumLesser"] != "":
+            media_list = self.must_be_lesser_than(
+                media_list, int(data_variables["popularityNumLesser"]),
+                'popularity')
+
+        if data_variables["episodeCountGreater"] != "":
+            media_list = self.must_be_greater_than(
+                media_list, int(data_variables["episodeCountGreater"]),
+                'episodes')
+
+        if data_variables["episodeCountLesser"] != "":
+            media_list = self.must_be_lesser_than(
+                media_list, int(data_variables["episodeCountLesser"]),
+                'episodes')
+            
+        if len(data_variables["searchGenresInclude"]) > 0:
+            media_list = self.must_include_list(
+                media_list, data_variables["searchGenresInclude"], "genres")
+
+        if len(data_variables["searchGenresUninclude"]) > 0:
+            media_list = self.must_not_include_list(
+                media_list, data_variables["searchGenresUninclude"], "genres")
+
+        #media_list = self.remove_duplicates(media_list)
+
+        return media_list, data_variables["pageNumber"]
+
+    def get_staff_characters(self, data_variables):
+
+        variables = {
+            'page': data_variables["pageNumber"],
+            'isAdult': False,
+            'staffID': data_variables["id"],
+            'sort': [data_variables["sortBy"]],
+        }
+
+        media_list = []
+        character_list = []
+        flag = True
+        name = ''
+
+        counter = 0
+        while flag:
+            counter += 1
+            #print(variables)
+            url = 'https://graphql.anilist.co'
+
+            response = requests.post(url,
+                                     json={
+                                         'query': self.staff_character_query,
+                                         'variables': variables
+                                     })
+            if response.status_code == 200:
+                data = response.json()
+                if len(character_list) > 45 or data['data']['Page']['staff'][
+                        0]['characters']['edges'] == []:
+                    flag = False
+                else:
+                    character_list += data['data']['Page']['staff'][0][
+                        'characters']['edges']
+                    variables['page'] += 1
+
+            else:
+                flag = False
+                print("oops")
+                print(response.json())
+
+            if counter == 1:
+                first_data = data
+
+        #media_list = self.remove_duplicates(media_list)
+
+        return character_list, data_variables["pageNumber"], first_data
+
+
+get_anime = QueryAPI()
 
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    """url = "https://graphql.anilist.co"
+    query = '''
+        query {
+            SiteStatistics {
+                users {
+                    nodes {
+                        date
+                        count
+                    }
+                }
+            }
+        }
+    '''
+    response = requests.post(url, json={'query': query})
+    data = response.json()
+    if response.status_code == 200:
+        print("working")
+    else:
+        print("oops")
+        print(data)
+    print(data)"""
+    return redirect('/anime')
 
 
-@app.route('/anilist')
-def anilist():
+@app.route('/anime')
+def anime():
     url = "https://graphql.anilist.co"
     query = '''
         query {
@@ -408,68 +1068,35 @@ def anilist():
 def search_anime():
     data_variables = request.get_json()
 
-    for x in data_variables:
-        print(x, data_variables[x])
-    print(data_variables)
-
-    data_variables["searchGenresInclude"] = json.loads(
-        data_variables["searchGenresInclude"])
-    data_variables["searchGenresUninclude"] = json.loads(
-        data_variables["searchGenresUninclude"])
+    data_variables["genre_in"] = json.loads(
+        data_variables["genre_in"])
+    data_variables["genre_not_in"] = json.loads(
+        data_variables["genre_not_in"])
     data_variables["includeRelations"] = json.loads(
         data_variables["includeRelations"])
     data_variables["unincludeRelations"] = json.loads(
         data_variables["unincludeRelations"])
+    if "distrabutionStatusGreaterThan" in data_variables:
+        data_variables["distrabutionStatusGreaterThan"] = json.loads(
+            data_variables["distrabutionStatusGreaterThan"])
+    if "distrabutionStatusLesserThan" in data_variables:
+        data_variables["distrabutionStatusLesserThan"] = json.loads(
+            data_variables["distrabutionStatusLesserThan"])
 
-    variables = {
-        'page': data_variables["pageNumber"],
-        'perPage': 50,
-        'isAdult': False,
-        'sort': [data_variables["sortBy"]],
-        'animePage': 1,
-    }
+    for x in data_variables:
+        print(x, data_variables[x])
+
+    pageNumber = 0
 
     print(data_variables['studio'])
     if data_variables['studio'] == "":
-        media_list, variables['page'] = get_anime.get_anime(data_variables)
+        media_list, pageNumber = get_anime.get_anime(data_variables)
 
     else:
-        query = get_anime.media_studio_search
-        variables['studioName'] = data_variables["studio"]
 
-        media_list = get_anime.get_all_studio_anime(data_variables['studio'],
-                                                    variables)
+        media_list, pageNumber = get_anime.get_all_studio_anime(data_variables)
 
-        if data_variables["season"] != "":
-            media_list = get_anime.must_include_single(
-                media_list, data_variables["season"], "season")
-
-        if data_variables["startingYear"] != None:
-            media_list = get_anime.must_include_single(
-                media_list, data_variables["startingYear"], "seasonYear")
-
-        if data_variables["formatOption"] != "":
-            media_list = get_anime.must_include_single(
-                media_list, data_variables["formatOption"], "format")
-
-        if data_variables["mediaSource"] != "":
-            pass
-
-        if data_variables["averageScoreOption"] != "":
-            pass
-
-        sortBy = data_variables['sortBy'].split("_")[0].lower()
-
-        if sortBy == "score":
-            sortBy = "averageScore"
-
-        if len(data_variables["searchGenres"]) > 0:
-            media_list = get_anime.must_include_list(
-                media_list, data_variables["searchGenresInclude"], "genres")
-
-        media_list = get_anime.sort_anime(sortBy, media_list)
-
-    return {'media_list': media_list, 'page': variables['page']}
+    return {'media_list': media_list, 'page': pageNumber}
 
 
 @app.route('/anime_info/<int:id>')
@@ -493,8 +1120,41 @@ def anime_info(id):
                 id: $id, 
             ) {
                 id
+                description (
+                    asHtml: true
+                )
                 popularity
                 averageScore
+                trending
+                favourites
+                episodes
+                duration
+                genres
+                season
+                startDate {
+                    year
+                    month
+                    day
+                }
+                endDate {
+                    year
+                    month
+                    day
+                }
+                format
+                bannerImage
+                title {
+                    romaji
+                    english
+                }
+                studios {
+                    edges {
+                        isMain
+                        node {
+                            name
+                        }
+                    }
+                }
                 relations {
                     edges {
                         node {
@@ -509,6 +1169,7 @@ def anime_info(id):
                                 medium
                                 color
                             }
+                            siteUrl
                         }
                         relationType (version: 2)
                     }
@@ -523,7 +1184,7 @@ def anime_info(id):
                     medium
                     color
                 }
-
+                siteUrl
 
             }
         }
@@ -549,22 +1210,113 @@ def anime_info(id):
 
     data = data.get('data', {}).get('Page', {}).get('media', [])[0]
 
-    #print(data)
-
-    print(data['title']['romaji'])
-    print(data['coverImage']['medium'])
-    print(data['relations']['edges'])
-
-    return render_template('anime_info.html',
-                           title=data['title']['romaji'],
-                           image=data['coverImage']['medium'],
-                           relations=data['relations']['edges'])
+    return render_template('anime_info.html', data=data)
 
 
 @app.route('/characters')
 def characters():
 
     return render_template('characters.html')
+
+
+@app.route('/staff')
+def staff():
+    return render_template('staff.html')
+
+
+@app.route('/staff_info/<int:id>')
+def staff_info(id):
+    url = "https://graphql.anilist.co"
+    query = '''
+        query {
+            GenreCollection,
+            MediaTagCollection {
+                id
+                name
+                description
+                category
+                rank
+                isGeneralSpoiler
+                isMediaSpoiler
+                isAdult
+                userId
+          }
+        }
+    '''
+    response = requests.post(url, json={'query': query})
+    data = response.json()
+    if response.status_code == 200:
+        print("working")
+    else:
+        print("oops")
+        print(data)
+
+    all_genres = data['data']['GenreCollection']
+
+    return render_template('staff_info.html', genres=all_genres, id=id)
+
+
+@app.route('/search_staff', methods=["POST"])
+def search_staff():
+    data_variables = request.get_json()
+
+    staff_list, variables = get_anime.get_staff(data_variables)
+
+    return {'staff_list': staff_list, 'page': variables['page']}
+
+
+@app.route('/search_staff_anime', methods=["POST"])
+def search_staff_anime():
+    data_variables = request.get_json()
+
+    data_variables["searchGenresInclude"] = json.loads(
+        data_variables["searchGenresInclude"])
+    data_variables["searchGenresUninclude"] = json.loads(
+        data_variables["searchGenresUninclude"])
+    data_variables["includeRelations"] = json.loads(
+        data_variables["includeRelations"])
+    data_variables["unincludeRelations"] = json.loads(
+        data_variables["unincludeRelations"])
+
+    media_list, page = get_anime.get_staff_anime(data_variables)
+
+    print("returing staff anime")
+    return {
+        'media_list': media_list,
+        'page': page,
+    }
+
+
+@app.route('/search_staff_characters', methods=["POST"])
+def search_staff_characters():
+    data_variables = request.get_json()
+
+    media_list, character_list, data = get_anime.get_staff_characters(
+        data_variables)
+
+    print("returing staff anime")
+    return {
+        'full data': data,
+        'media_list': media_list,
+        'page': 1,
+        'character_list': character_list
+    }
+
+
+@app.route('/search_staff_manga', methods=["POST"])
+def search_staff_manga():
+    data_variables = request.get_json()
+
+    media_list, character_list, data = get_anime.get_staff_characters(
+        data_variables)
+
+    print("returing staff anime")
+    return {
+        'full data': data,
+        'media_list': media_list,
+        'page': 1,
+        'character_list': character_list
+    }
 
 
 @app.route('/search_character', methods=["POST"])

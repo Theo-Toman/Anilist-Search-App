@@ -1,18 +1,75 @@
 {% extends 'base.html' %}
 {% block content %}
-    <h2>{{title}}</h2>
-    <img src="{{image}}">
-    <h3>Relations</h3>
-    <div class="anime-page-info">
-        <div class="anime-relations-grid">
-            {% for relation in relations %}
-                <div class="item anime">
-                    <img src="{{relation.node.coverImage.medium}}">
-                    <p>{{relation.node.title.romaji}}</p>
-                    <p>{{relation.relationType}}</p>
-                </div>
+    
+    <div id='info-banner' style="background-image: url({{data.bannerImage}})"></div>
+        
+    <div id="header-anime-page-info">
+        <div id="anime-container">
+            <img src="{{data.coverImage.large}}">
+            <a href='{{data.siteUrl}}'>{{data.title.english}}</a>
+        </div>
+        <div id="description">
+            {{data.description|safe}}
+        </div>
+
+        <div id="info-column">
+            <div class="info-row">
+                <p class="info-title">Format</p>
+                <p class="info">{{data.format}}</p>
+            </div>
+            <div class="info-row">
+                <p class="info-title">Favourites</p>
+                <p class="info">{{data.favourite}}</p>
+            </div>
+            <div class="info-row">
+                <p class="info-title">Episodes</p>
+                <p class="info">{{data.episodes}}</p>
+            </div>
+            <div class="info-row">
+                <p class="info-title">Episode Duration</p>
+                <p class="info">{{data.duration}} minutes</p>
+            </div>
+            <div class="info-row">
+                <p class="info-title">Season</p>
+                <p class="info">{{data.season}}</p>
+            </div>
+            <div class="info-row">
+                <p class="info-title">Date Released</p>
+                <p class="info">{{data.startDate.day}}/{{data.startDate.month}}/{{data.startDate.year}}</p>
+            </div>
+            <div class="info-row">
+                <p class="info-title">Date Finished</p>
+                <p class="info">{{data.endDate.day}}/{{data.endDate.month}}/{{data.endDate.year}}</p>
+            </div>
+            {% for studio in data.studios.edges %}
+                {% if studio.isMain %}
+                    <div class="info-row">
+                        <p class="info-title">Main Studio(s)</p>
+                        <p class="info">{{studio.node.name}}</p>
+                    </div>
+                {% endif %}
             {% endfor %}
         </div>
+        <div class="anime-data-sections">
+            <h3>Relations</h3>
+            <div class="anime-relations-grid">
+                {% for relation in data.relations.edges %}
+                <div class="anime-container">
+                    <div class="anime relation-item">
+                        <a href="{{relation.node.siteUrl}}">
+                            <img src="{{relation.node.coverImage.large}}">
+                            <p class="relation">{{relation.relationType}}</p>
+                        </a>
+                        <p>{{relation.node.title.romaji}}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
+
+<script>
+    
+</script>
     
 {% endblock %}

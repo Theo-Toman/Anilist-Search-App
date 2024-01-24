@@ -1,0 +1,112 @@
+.anime-relation {
+    
+}
+
+.anime-container {
+    position: relative;
+
+}
+
+.anime-data-sections h3 {
+    text-align: center;
+}
+
+.rank_number {
+    border-radius: 100%;
+    width: 1.5em;
+    height: 1.5em;
+    position: absolute;
+    top: -3%;
+    left: -3%;
+    font-size: 1.5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #f7f7f7;
+}
+
+.search-option-title {
+    text-decoration: underline;
+    text-decoration: bold;
+    font-size: 1.1em;
+}
+
+.anime-container .pop-up-information {
+    background-color: white;
+    border: solid white 2px;
+    border-radius: 5px;
+    position: absolute;
+    top: 0;
+    right: -150%;
+    height: 100%;
+    width: 150%;
+    color: black;
+    text-decoration: underline;
+    float: left;
+    display: none;
+    z-index: 5;
+}
+
+.anime-container:hover .pop-up-information {
+  display: block;
+}
+
+.staff-role {
+    font-size: 0.75rem;
+    color: #595959;
+}
+
+.search-pop-up-container {
+    padding: 5px;
+    z-index: 10;
+    position: relative;
+    display: none;
+    background-color: #f2f2f2;
+}
+
+.anime-relations-grid .anime-container a .relation {
+    background-color: black;
+    opacity: 90%;
+    font-size: 1em;
+    border: solid black 2px;
+    border-radius: 5px;
+    position: absolute;
+    top: -5%;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    height: 1em;
+    width: 100%;
+    color: white;
+    text-decoration: underline;
+    z-index: 5;
+}
+
+.anime-container {
+    margin-right: 1em;
+    margin-left: 1em;
+}
+
+.search-item img {
+    
+}
+
+.anime img {
+    width: 100%;
+    height: 100%;
+    border: solid 2px black;
+    animation: rotate; 
+    animation-duration: 1.8s; 
+    border-radius: 5px;
+}
+
+.search-item .anime {
+    max-height: 200px;
+}
+
+.anime p {
+    font-size: 1rem;
+    padding: 0px;
+    color: black;
+    text-decoration: underline;
+}

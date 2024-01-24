@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="search-grid staff">
+        <div class="search-item">
+            <label for="Search">Search: </label><br>
+            <input type="text" id="search" name="search" onchange="searchAnime(true)">
+        </div>
+        <div class="search-item">
+            <label for="favourites-option">Favourites is:</label><br>
+            <label for="favourites-greater"></label>Greater Than: <input type="number" id="favourites-greater" name="favourites-greater" onchange="searchAnime(true)" min=1 max=100><br>
+            <label for="favourites-lesser"></label>Lesser Than: <input type="number" id="favourites-lesser" name="favourites-lesser" onchange="searchAnime(true)" min=1 max=100>
+        </div>
+        
+        <div class="search-item">
+            <label for="genre-option">Genres:</label><br>
+            <div class="search-dropdown">
+                <input type="search" class="option-search" id="genre-option-search" name="genre-option-search" oninput="getDropDownSearchResults('genre-option-search')">
+                <div class="search-dropdown-content genre-search">
+                    {% for genre in genres %}
+                        <button class="genres-list" onclick="addToSearchList('{{genre}}', 'genres')">{{genre}}</button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="search-item">
+            <label for="relation-option">Relations:</label><br>
+            <div class="search-dropdown">
+                <input type="search" class="option-search" id="relation-option-search" name="relation-option-search" oninput="getDropDownSearchResults('relation-option-search')">
+                <div class="search-dropdown-content relation-search">
+                        <button class="relation-list" onclick="addToSearchList('ADAPTATION', 'relations')">Adaption</button>
+                        <button class="relation-list" onclick="addToSearchList('PREQUEL', 'relations')">Prequal</button>
+                        <button class="relation-list" onclick="addToSearchList('SEQUEL', 'relations')">Sequel</button>
+                        <button class="relation-list" onclick="addToSearchList('PARENT', 'relations')">Parent</button>
+                        <button class="relation-list" onclick="addToSearchList('SIDE_STORY', 'relations')">Side Story</button>
+                        <button class="relation-list" onclick="addToSearchList('CHARACTER', 'relations')">Character</button>
+                        <button class="relation-list" onclick="addToSearchList('SUMMERY', 'relations')">Summery</button>
+                        <button class="relation-list" onclick="addToSearchList('ALTERNATIVE', 'relations')">Alternative</button>
+                        <button class="relation-list" onclick="addToSearchList('SPIN_OFF', 'relations')">Spin Off</button>
+                        <button class="relation-list" onclick="addToSearchList('OTHER', 'relations')">Other</button>
+                        <button class="relation-list" onclick="addToSearchList('SOURCE', 'relations')">Source</button>
+                        <button class="relation-list" onclick="addToSearchList('COMPILATION', 'relations')">Compilation</button>
+                        <button class="relation-list" onclick="addToSearchList('CONTAINS', 'relations')">Contains</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="search-item">
+            <label for="studio-option">Studios:</label><br>
+            <div class="search-dropdown">
+                <input type="search" class="option-search" id="studio-option-search" name="studio-option-search" oninput="searchStudios()">
+                <div class="search-dropdown-content studio-search">
+        
+                </div>
+            </div>
+        </div>
+        
+        <div class="search-item">
+            <label for="sort-option-cat">Sorting Order:</label><br>
+            <select id="sort-option-cat" name="sort-option-cat" onchange="searchAnime(true)">
+                <option value="ROLE">Role</option>
+                <option value="LANGUAGE">Language</option>
+                <option value="FAVOURITES">Favourites</option>
+            </select>
+            
+            <select id="sort-option-order" name="sort-option-order" onchange="searchAnime(true)">
+                <option value="_DESC">Desending</option>
+                <option value="">Ascending</option>
+            </select>
+        </div>
+        
+    </div>
+    
+    <div id="current-search-options">
+    </div>
+
+    <div class="main-page-grid-container"></div>
+
+    <script>
+        function addToSearchBox(searchBoxId, valueToAdd) {
+            document.getElementById(searchBoxId).value = valueToAdd;
+            searchAnime(true);
+        }
+    </script>
+    <script>
+        function getDropDownSearchResults(searchBoxId) {
+            console.log(searchBoxId)
+            const searchQuery = document.getElementById(searchBoxId).value.toUpperCase();
+            let searchList = []
+            switch (searchBoxId) {
+                case 'genre-option-search':
+                    searchList = document.getElementsByClassName('genres-list');
+                    break;
+                case 'relation-option-search':
+                    searchList = document.getElementsByClassName('relation-list');
+                    break;
+            }
+            console.log(searchList)
+
+            for (let i = 0; i < searchList.length; i++) {
+                console.log(searchList[i])
+                console.log(searchList[i].innerHTML)
+                if (searchList[i].innerHTML.toUpperCase().includes(searchQuery)) {
+                    searchList[i].style.display = "";
+                } else {
+                    searchList[i].style.display = "none";
+                }
+            }
+        }
+
+        
+        let genreSearchListInclude = []
+        let genreSearchListUninclude = []
+        let includeRelations = []
+        let unincludeRelations = []
+        
+        function addToSearchList(value, searchListType) {
+            switch (searchListType) {
+                case "genres":
+                    if (genreSearchListUninclude.includes(value)) {
+                        return;
+                    } else if (genreSearchListInclude.includes(value)) {
+                        let button = $(`button:contains(X ${value})`)
+
+                        genreSearchListInclude.splice(genreSearchListInclude.indexOf(value), 1); // 2nd parameter means remove one item only
+                        button.remove();
+
+                        div = document.getElementById('current-search-options');
+
+                        let allOptions = document.getElementsByClassName('search-option-item')
+
+                        button = document.createElement('button');
+                        button.className = 'search-option-item uninclude-anime';
+                        button.innerHTML = `X ${value}`;
+                        button.addEventListener("click", function() {
+                            deleteOption(value, "genres", "search-option-item uninclude-anime");
+                        });
+                        //button.onclick = "deleteOption('search-option-item', allOptions.length + 1)";
+
+                        div.appendChild(button);
+                        genreSearchListUninclude.push(value);
+                    } else {
+                        div = document.getElementById('current-search-options');
+
+                        let allOptions = document.getElementsByClassName('search-option-item')
+                        
+                        let button = document.createElement('button');
+                        button.className = 'search-option-item include-anime';
+                        button.innerHTML = `X ${value}`;
+                        button.addEventListener("click", function() {
+                            deleteOption(value, "genres", "search-option-item include-anime");
+                        });
+                        //button.onclick = "deleteOption('search-option-item', allOptions.length + 1)";
+
+                        div.appendChild(button);
+                        genreSearchListInclude.push(value);
+                    }
+                    break
+                case "relations":
+                    if (unincludeRelations.includes(value)) {
+                        return;
+                    } else if (includeRelations.includes(value)) {
+                        let button = $(`button:contains(X ${value})`)
+
+                        includeRelations.splice(includeRelations.indexOf(value), 1); // 2nd parameter means remove one item only
+                        button.remove();
+
+                        div = document.getElementById('current-search-options');
+
+                        let allOptions = document.getElementsByClassName('search-option-item')
+
+                        button = document.createElement('button');
+                        button.className = 'search-option-item uninclude-anime';
+                        button.innerHTML = `X ${value}`;
+                        button.addEventListener("click", function() {
+                            deleteOption(value, "relations", "search-option-item uninclude-anime");
+                        });
+                        //button.onclick = "deleteOption('search-option-item', allOptions.length + 1)";
+
+                        div.appendChild(button);
+                        unincludeRelations.push(value);
+                    } else {
+                        div = document.getElementById('current-search-options');
+                        
+                        let allOptions = document.getElementsByClassName('search-option-item')
+
+                        let button = document.createElement('button');
+                        button.className = 'search-option-item include-anime';
+                        button.innerHTML = `X ${value}`;
+                        console.log(allOptions.length)
+                        button.addEventListener("click", function() {
+                            deleteOption(value, "relations", "search-option-item include-anime");
+                        });
+                        //button.onclick = "deleteOption('search-option-item', allOptions.length + 1)";
+
+                        div.appendChild(button);
+                        includeRelations.push(value);
+                    }
+                    break
+            }
+            searchAnime(true);
+        }
+
+        function deleteOption(valueToRemove, whatList, includeOrUninclude) {
+            let button = $(`button:contains(X ${valueToRemove})`)
+            console.log(button)
+            switch (whatList) {
+                case "relations":
+                    switch (includeOrUninclude) {
+                        case "search-option-item include-anime":
+                            console.log("relations in" + includeRelations.indexOf(valueToRemove))
+                            includeRelations.splice(includeRelations.indexOf(valueToRemove), 1); // 2nd parameter means remove one item only
+                            break;
+
+                        case "search-option-item uninclude-anime":
+                            console.log("relations un" + includeRelations.indexOf(valueToRemove))
+                            unincludeRelations.splice(unincludeRelations.indexOf(valueToRemove), 1); // 2nd parameter means remove one item only
+                            break;
+                    }
+                case "genres":
+                    switch (includeOrUninclude) {
+                        case "search-option-item include-anime":
+                            genreSearchListInclude.splice(genreSearchListInclude.indexOf(valueToRemove), 1); // 2nd parameter means remove one item only
+                            break;
+
+                        case "search-option-item uninclude-anime":
+                            genreSearchListUninclude.splice(genreSearchListUninclude.indexOf(valueToRemove), 1); // 2nd parameter means remove one item only
+                            break;
+                    }
+            }
+            button.remove();
+            searchAnime(true);
+            
+        }
+
+        let pageNumber = 1;
+        
+        $(window).scroll(function () {
+           if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+              searchAnime(false);
+           }
+        });
+
+        let rank = 0
+        let colour = [239, 93, 96]
+
+        let prevColours = []
+        
+        function searchAnime(replaceSearch) {
+            let div = document.getElementsByClassName('main-page-grid-container')[0];
+            
+            if (replaceSearch) {
+                div.replaceChildren();
+                pageNumber = 1;
+                rank = 0
+                colour = [239, 93, 96]
+            } else {
+                pageNumber++;
+            }
+
+            if (!replaceSearch && document.getElementById('studio-option-search').value != "") {
+                return;
+            }
+
+            const sortBy = document.getElementById("sort-option-cat").value + document.getElementById("sort-option-order").value;
+            console.log(sortBy)
+
+            const dataToSend = {
+                search: document.getElementById("search").value,
+                pageNumber: pageNumber,
+                sortBy: sortBy,
+                favouritesGreater: document.getElementById("favourites-greater").value,
+                favouritesLesser: document.getElementById("favourites-lesser").value,
+            }
+            
+            $.ajax({
+                type: 'POST',
+                url: '/search_staff',
+                contentType: 'application/json;charset=UTF-8',
+                data: JSON.stringify(dataToSend),
+              
+                success: function(result){
+                    console.log(result)
+                    pageNumber = result['page']
+                    result = result['staff_list']
+                    
+                    console.log(result)
+                    hexCodesUsed = []
+                    for (let i = 0; i < result.length; i++) {
+                        
+                        rank++
+                        let ranking = rank;
+
+                        //let classes = document.getElementsByClassName('item'); 
+                        //let endpoint = classes[classes.length - 1];
+                        let element = document.createElement('div');
+                        let title = '';
+                        element.className = 'item staff';
+
+                        
+                        
+                        
+                        let rank_number = document.createElement('div');
+                        rank_number.className = 'rank_number';
+                        rank_number.innerHTML = ranking
+                        rank_number.style.backgroundColor = `rgb(${colour[0]}, ${colour[1]}, ${colour[2]})`;
+
+                        if (ranking < 1000) {
+                            rank_number.style.width = "1.5em";
+                            rank_number.style.height = "1.5em";
+                        } else {
+                            rank_number.style.width = "2em";
+                            rank_number.style.height = "2em";
+                        }
+
+                        let primaryOccupations = ""
+
+                        for (let occIndex = 0; occIndex < result[i]["primaryOccupations"].length; occIndex++) {
+                            if (occIndex == result[i]["primaryOccupations"].length - 1) {
+                                primaryOccupations += result[i]["primaryOccupations"][occIndex]
+                            } else {
+                                primaryOccupations += result[i]["primaryOccupations"][occIndex] + ", "
+                            }
+                        }
+
+                        
+
+                        let popUpStuff = document.createElement('div');
+                        popUpStuff.className = 'pop-up-information';
+                        popUpStuff.innerHTML = `<p>${result[i].name.full}</p>
+                                                <p>Favourites: ${result[i].favourites}</p>
+                                                <p>${primaryOccupations}</p>
+                                                <a href='staff_info/${result[i].id}')> View More</a>`
+
+                        element.appendChild(rank_number);
+
+                        let animeImageLink = document.createElement('a');
+                        animeImageLink.innerHTML = `<a href='staff_info/${result[i].id}')><img src="${result[i].image.large}"></a>`;
+                        element.appendChild(animeImageLink);
+                        
+                        let p = document.createElement('p');
+                        p.innerHTML = result[i].name.full;
+                        element.appendChild(p);
+
+                        let container = document.createElement('div');
+                        container.className = 'anime-container';
+
+                        container.appendChild(element);
+
+                        container.appendChild(popUpStuff);
+
+                        div.appendChild(container);
+
+                        let colourIndex = Math.floor((Math.random() * 3))
+
+                        colour[colourIndex] += 5
+
+                        if (colour[colourIndex] > 254) {
+                            colour[colourIndex] = 0
+                        }
+
+                    }
+                }
+                  
+              });
+        }
+
+        function replaceLoadingClass(index) {
+            console.log(document.getElementsByClassName('item anime'))
+            document.getElementsByClassName('item anime')[index].classList.remove('image-loading');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            searchAnime(true);
+        }, false);
+    </script>
+{% endblock %}

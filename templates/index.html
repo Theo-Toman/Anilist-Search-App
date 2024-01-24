@@ -3,64 +3,17 @@
 
 <div class="slider-container">
     <div class="slider-track">
-        <div class="slider-thumb" id="thumb1"></div>
-        <div class="slider-thumb" id="thumb2"></div>
+        
     </div>
+    <div class="slider-thumb" id="thumb1" onclick="moveSlider(event)">1</div>
+    <div class="slider-thumb" id="thumb2">2</div>
 </div>
+
 <script>
-    const thumb1 = document.getElementById('thumb1');
-    const thumb2 = document.getElementById('thumb2');
-    const sliderTrack = document.querySelector('.slider-track');
-
-    let isDragging = false;
-    let activeThumb = null;
-
-    function moveThumb(thumb, position) {
-        const maxPosition = sliderTrack.clientWidth - thumb.clientWidth;
-        if (position >= 0 && position <= maxPosition) {
-            thumb.style.left = `${position}px`;
-        }
+    function moveSlider(event) {
+        console.log(event.clientX)
+        let element = document.getElementById('thumb1');
+        element.style.x = `${event.clientX}`;
     }
-
-    function logMousePosition(e) {
-        const mousePosition = e.clientX - sliderTrack.getBoundingClientRect().left;
-        console.log('Mouse Position:', mousePosition);
-    }
-
-    function calculateValue(thumb) {
-        const thumbPosition = parseInt(thumb.style.left, 10);
-        const sliderWidth = sliderTrack.clientWidth - thumb.clientWidth;
-        const percentage = (thumbPosition / sliderWidth) * 100;
-        return Math.round(percentage);
-    }
-
-    thumb1.addEventListener('mousedown', () => {
-        isDragging = true;
-        activeThumb = thumb1;
-    });
-
-    thumb2.addEventListener('mousedown', () => {
-        isDragging = true;
-        activeThumb = thumb2;
-    });
-
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-        activeThumb = null;
-
-        // Log the values when thumbs are released
-        console.log('Thumb1 Value:', calculateValue(thumb1));
-        console.log('Thumb2 Value:', calculateValue(thumb2));
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging && activeThumb) {
-            logMousePosition(e);
-
-            const newPosition = e.clientX - sliderTrack.getBoundingClientRect().left;
-
-            moveThumb(activeThumb, newPosition);
-        }
-    });
 </script>
 {% endblock %}

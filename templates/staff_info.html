@@ -1,0 +1,670 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2>{{title}}</h2>
+    <a href='{{url}}'>Link</a>
+    <img src="{{image}}">
+    <h3>Relations</h3>
+    <div class="anime-page-info">
+    </div>
+
+{% set is_staff_anime = "T" %}
+
+{% include 'anime_search_template.html' %}
+
+<script>
+    function getSearchInfo(replaceSearch) {
+        switch(document.getElementById('staff-work-option').value) {
+            case "ANIMES":
+                searchAnime(replaceSearch);
+                break;
+            case "MANGAS":
+                searchAnime(replaceSearch);
+                break;
+            case "CHARACTERS":
+                searchCharacters(replaceSearch);
+                break;
+        }
+    }
+    
+    function addToSearchBox(searchBoxId, valueToAdd) {
+        document.getElementById(searchBoxId).value = valueToAdd;
+        searchAnime(true);
+    }
+        function searchStudios() {
+            var query = `
+            query (
+                $page: Int,
+                $perPage: Int,
+                $search: String
+            ) {
+                Page (page: $page, perPage: $perPage) {
+                    pageInfo {
+                        total
+                        currentPage
+                        lastPage
+                        hasNextPage
+                        perPage
+                    }
+                    studios (
+                        search: $search
+                    ) {
+                        id
+                        name
+                    }
+                }
+            }
+        `;
+
+        // Define our query variables and values that will be used in the query request
+            console.log(document.getElementById('studio-option-search').value)
+        var variables = {
+            page: 1,
+            perPage: 10,
+            search: document.getElementById('studio-option-search').value
+        };
+
+        // Define the config we'll need for our Api request
+        var url = 'https://graphql.anilist.co',
+            options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    variables: variables
+                })
+            };
+
+            console.log(fetch(url, options))
+
+        // Make the HTTP Api request
+        fetch(url, options).then(handleResponse)
+                           .then(handleData)
+                           .catch(handleError);
+
+        function handleResponse(response) {
+            return response.json().then(function (json) {
+                return response.ok ? json : Promise.reject(json);
+            });
+        }
+
+        function handleData(data) {
+            data = data['data']['Page']['studios']
+            console.log(data);
+            let div = document.getElementsByClassName('search-dropdown-content studio-search')[0];
+            div.replaceChildren();
+
+            for (let i = 0; i < data.length; i++) {
+                let element = document.createElement('button');
+
+                element.innerHTML = data[i].name;
+                element.addEventListener("click", function () {addToSearchBox('studio-option-search', data[i].name)})
+
+                div.appendChild(element);
+            }
+        }
+
+        function handleError(error) {
+            alert('Error, check console');
+            console.error(error);
+        }
+    }
+</script>
+<script>
+    function getDropDownSearchResults(searchBoxId) {
+        console.log(searchBoxId)
+        const searchQuery = document.getElementById(searchBoxId).value.toUpperCase();
+        let searchList = []
+        switch (searchBoxId) {
+            case 'genre-option-search':
+                searchList = document.getElementsByClassName('genres-list');
+                break;
+            case 'relation-option-search':
+                searchList = document.getElementsByClassName('relation-list');
+                break;
+        }
+        console.log(searchList)
+
+        for (let i = 0; i < searchList.length; i++) {
+            console.log(searchList[i])
+            console.log(searchList[i].innerHTML)
+            if (searchList[i].innerHTML.toUpperCase().includes(searchQuery)) {
+                searchList[i].style.display = "";
+            } else {
+                searchList[i].style.display = "none";
+            }
+        }
+    }
+
+
+    let genreSearchListInclude = []
+    let genreSearchListUninclude = []
+    let includeRelations = []
+    let unincludeRelations = []
+
+    function addToSearchList(value, searchListType) {
+        switch (searchListType) {
+            case "genres":
+                if (genreSearchListUninclude.includes(value)) {
+                    return;
+                } else if (genreSearchListInclude.includes(value)) {
+                    let button = $(`button:contains(X ${value})`)
+
+                    genreSearchListInclude.splice(genreSearchListInclude.indexOf(value), 1); // 2nd parameter means remove one item only
+                    button.remove();
+
+                    div = document.getElementById('current-search-options');
+
+                    let allOptions = document.getElementsByClassName('search-option-item')
+
+                    button = document.createElement('button');
+                    button.className = 'search-option-item uninclude-anime';
+                    button.innerHTML = `X ${value}`;
+                    button.addEventListener("click", function() {
+                        deleteOption(value, "genres", "search-option-item uninclude-anime");
+                    });
+                    //button.onclick = "deleteOption('search-option-item', allOptions.length + 1)";
+
+                    div.appendChild(button);
+                    genreSearchListUninclude.push(value);
+                } else {
+                    div = document.getElementById('current-search-options');
+
+                    let allOptions = document.getElementsByClassName('search-option-item')
+
+                    let button = document.createElement('button');
+                    button.className = 'search-option-item include-anime';
+                    button.innerHTML = `X ${value}`;
+                    button.addEventListener("click", function() {
+                        deleteOption(value, "genres", "search-option-item include-anime");
+                    });
+                    //button.onclick = "deleteOption('search-option-item', allOptions.length + 1)";
+
+                    div.appendChild(button);
+                    genreSearchListInclude.push(value);
+                }
+                break
+            case "relations":
+                if (unincludeRelations.includes(value)) {
+                    return;
+                } else if (includeRelations.includes(value)) {
+                    let button = $(`button:contains(X ${value})`)
+
+                    includeRelations.splice(includeRelations.indexOf(value), 1); // 2nd parameter means remove one item only
+                    button.remove();
+
+                    div = document.getElementById('current-search-options');
+
+                    let allOptions = document.getElementsByClassName('search-option-item')
+
+                    button = document.createElement('button');
+                    button.className = 'search-option-item uninclude-anime';
+                    button.innerHTML = `X ${value}`;
+                    button.addEventListener("click", function() {
+                        deleteOption(value, "relations", "search-option-item uninclude-anime");
+                    });
+                    //button.onclick = "deleteOption('search-option-item', allOptions.length + 1)";
+
+                    div.appendChild(button);
+                    unincludeRelations.push(value);
+                } else {
+                    div = document.getElementById('current-search-options');
+
+                    let allOptions = document.getElementsByClassName('search-option-item')
+
+                    let button = document.createElement('button');
+                    button.className = 'search-option-item include-anime';
+                    button.innerHTML = `X ${value}`;
+                    console.log(allOptions.length)
+                    button.addEventListener("click", function() {
+                        deleteOption(value, "relations", "search-option-item include-anime");
+                    });
+                    //button.onclick = "deleteOption('search-option-item', allOptions.length + 1)";
+
+                    div.appendChild(button);
+                    includeRelations.push(value);
+                }
+                break
+        }
+        searchAnime(true);
+    }
+
+    function deleteOption(valueToRemove, whatList, includeOrUninclude) {
+        let button = $(`button:contains(X ${valueToRemove})`)
+        console.log(button)
+        switch (whatList) {
+            case "relations":
+                switch (includeOrUninclude) {
+                    case "search-option-item include-anime":
+                        console.log("relations in" + includeRelations.indexOf(valueToRemove))
+                        includeRelations.splice(includeRelations.indexOf(valueToRemove), 1); // 2nd parameter means remove one item only
+                        break;
+
+                    case "search-option-item uninclude-anime":
+                        console.log("relations un" + includeRelations.indexOf(valueToRemove))
+                        unincludeRelations.splice(unincludeRelations.indexOf(valueToRemove), 1); // 2nd parameter means remove one item only
+                        break;
+                }
+            case "genres":
+                switch (includeOrUninclude) {
+                    case "search-option-item include-anime":
+                        genreSearchListInclude.splice(genreSearchListInclude.indexOf(valueToRemove), 1); // 2nd parameter means remove one item only
+                        break;
+
+                    case "search-option-item uninclude-anime":
+                        genreSearchListUninclude.splice(genreSearchListUninclude.indexOf(valueToRemove), 1); // 2nd parameter means remove one item only
+                        break;
+                }
+        }
+        button.remove();
+        searchAnime(true);
+
+    }
+
+    let pageNumber = 1;
+
+    $(window).scroll(function () {
+       if ($(window).scrollTop() >= $(document).height() - $(window).height() - 50) {
+        getSearchInfo(false);
+       }
+    });
+
+    let rank = 0
+    let colour = [239, 93, 96]
+
+    let prevColours = []
+
+    let requestInProcess = false;
+
+    let backedUpRequest = false;
+
+    let animesShown = []
+
+    function searchAnime(replaceSearch) {
+        let div = document.getElementsByClassName('main-page-grid-container')[0];
+
+        if (replaceSearch) {
+            div.replaceChildren();
+            pageNumber = 1;
+            rank = 0
+            colour = [239, 93, 96]
+            animesShown = []
+        } else {
+            pageNumber++;
+        }
+        if (requestInProcess) {
+            if (replaceSearch) {
+                backedUpRequest = true;
+            }
+            return;
+        }
+
+        const statusGreaters = document.getElementsByClassName('status-greater');
+
+        const distrabutionStatusGreaterThan = {
+
+        }
+
+        let totalStatusGreaterSearchAmount = 0
+        let multiplyStatusGreaterSearchAmountBy = 25
+
+        for (let i = 0; i < 6; i++) {
+            console.log(statusGreaters[i]);
+            const stat = statusGreaters[i].id.split("-")[2].toUpperCase();
+            const value = statusGreaters[i].value;
+            if (value) {
+                distrabutionStatusGreaterThan[stat] = parseInt(value);
+                totalStatusGreaterSearchAmount += parseInt(value)
+            } else {
+                switch (stat) {
+                    case "COMPLETED":
+                        multiplyStatusGreaterSearchAmountBy -= 0.06;
+                        break;
+                    case "CURRENT":
+                        multiplyStatusGreaterSearchAmountBy -= 0.06;
+                        break;
+                    case "PAUSED":
+                        multiplyStatusGreaterSearchAmountBy -= 0.16;
+                        break;
+                    case "DROPPED":
+                        multiplyStatusGreaterSearchAmountBy -= 0.16;
+                        break;
+                    case "PLANNING":
+                        multiplyStatusGreaterSearchAmountBy -= 0.16;
+                        break;
+                    case "REPEATING":
+                        multiplyStatusGreaterSearchAmountBy -= 0.4;
+                        break;
+                }
+            }
+        }
+
+        const statusLessers = document.getElementsByClassName('status-lesser');
+
+        const distrabutionStatusLesserThan = {
+
+        }
+
+        let totalStatusLesserSearchAmount = 0
+        let multiplyStatusLesserSearchAmountBy = 0
+
+        for (let i = 0; i < 6; i++) {
+            console.log(statusLessers[i]);
+            const stat = statusLessers[i].id.split("-")[2].toUpperCase();
+            const value = statusLessers[i].value;
+            if (value) {
+                distrabutionStatusLesserThan[stat] = parseInt(value);
+                totalStatusLesserSearchAmount += parseInt(value)
+                switch (stat) {
+                    case "COMPLETED":
+                        multiplyStatusLesserSearchAmountBy = 75;
+                        break;
+                    case "CURRENT":
+                        multiplyStatusLesserSearchAmountBy = 75;
+                        break;
+                    case "PAUSED":
+                        multiplyStatusLesserSearchAmountBy = 75;
+                        break;
+                    case "DROPPED":
+                        multiplyStatusLesserSearchAmountBy = 100;
+                        break;
+                    case "PLANNING":
+                        multiplyStatusLesserSearchAmountBy = 100;
+                        break;
+                    case "REPEATING":
+                        multiplyStatusLesserSearchAmountBy = 140;
+                        break;
+                }
+            }
+        }
+
+        const sortBy = document.getElementById("sort-option-cat").value + document.getElementById("sort-option-order").value;
+        console.log(sortBy)
+
+        const dataToSend = {
+            id: {{id}},
+            search: document.getElementById("search").value,
+            popularityNumGreater: document.getElementById("popularity-num-greater").value,
+            popularityNumLesser: document.getElementById("popularity-num-lesser").value,
+            formatOption: document.getElementById("format-option").value,
+            pageNumber: pageNumber,
+            sortBy: sortBy,
+            searchGenresInclude: JSON.stringify(genreSearchListInclude),
+            searchGenresUninclude: JSON.stringify(genreSearchListUninclude),
+            includeRelations: JSON.stringify(includeRelations),
+            unincludeRelations: JSON.stringify(unincludeRelations),
+            averageScoreNumGreater: document.getElementById("average-score-num-greater").value,
+            averageScoreNumLesser: document.getElementById("average-score-num-lesser").value,
+            yearGreater: document.getElementById("year-greater").value,
+            yearLesser: document.getElementById("year-lesser").value,
+            episodeCountGreater: document.getElementById("episode-count-greater").value,
+            episodeCountLesser: document.getElementById("episode-count-lesser").value,
+            mediaSource: document.getElementById("media-source-option").value,
+            season: document.getElementById("airing-date-season").value,
+            studio: document.getElementById('studio-option-search').value,
+            distrabutionStatusGreaterThan: JSON.stringify(distrabutionStatusGreaterThan),
+            distrabutionStatusLesserThan: JSON.stringify(distrabutionStatusLesserThan)
+        }
+
+        if (totalStatusLesserSearchAmount > 0 && dataToSend['popularityNumGreater'] == "" && dataToSend['popularityNumLesser'] == "") {
+            dataToSend['popularityNumLesser'] = totalStatusLesserSearchAmount * multiplyStatusLesserSearchAmountBy
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '/search_staff_anime',
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(dataToSend),
+
+            success: function(result){
+                console.log(result)
+                pageNumber = result['page']
+                result = result['media_list']
+
+                console.log(result)
+                hexCodesUsed = []
+                for (let i = 0; i < result.length; i++) {
+                    if (result[i]['node']['id'] == animesShown[animesShown.length - 1]) {
+                        let animeContainers = document.getElementsByClassName("anime-container")
+                        console.log(animeContainers[animeContainers.length - 1])
+
+                        let staffRole = document.createElement('p');
+                        staffRole.className = 'staff-role'
+                        staffRole.innerHTML = result[i]['staffRole'];
+        
+                        animeContainers[animeContainers.length - 1].appendChild(staffRole)
+                    } else {
+                        rank++
+                        let ranking = rank;
+
+                        //let classes = document.getElementsByClassName('item'); 
+                        //let endpoint = classes[classes.length - 1];
+                        let element = document.createElement('div');
+                        let title = '';
+                        element.className = 'item anime';
+
+                        if (result[i]['node'].title.english !== null) {
+                            title = result[i]['node'].title.english;
+                        } else if (result[i]['node'].title.romaji !== null) {
+                            title = result[i]['node'].title.romaji;
+                        } else {
+                            title = result[i]['node'].title.native;
+                            console.log(result[i]['node'].title)
+                        }
+
+                        element.addEventListener("onload", function() {replaceLoadingClass(rank - 1)});
+
+
+                        let popUpStuff = document.createElement('div');
+                        popUpStuff.className = 'pop-up-information';
+                        popUpStuff.innerHTML = `<p>${title}</p>
+                                                <p>Popularity: ${result[i]['node'].popularity}</p>
+                                                <p>Score: ${result[i]['node'].averageScore}%</p>
+                                                <p>Favourites: ${result[i]['node'].favourites}</p>
+                                                <p>${result[i]['node'].format} ${result[i]['node'].episodes} Episodes</p>
+                                                <a href='anime_info/${result[i]['node'].id}')> View More</a>`
+
+                        let rank_number = document.createElement('div');
+                        rank_number.className = 'rank_number';
+                        rank_number.innerHTML = ranking
+                        rank_number.style.backgroundColor = `rgb(${colour[0]}, ${colour[1]}, ${colour[2]})`;
+
+                        if (ranking < 1000) {
+                            rank_number.style.width = "1.5em";
+                            rank_number.style.height = "1.5em";
+                        } else {
+                            rank_number.style.width = "2em";
+                            rank_number.style.height = "2em";
+                        }
+
+                        element.appendChild(rank_number);
+
+                        let animeImageLink = document.createElement('a');
+                        animeImageLink.innerHTML = `<img src="${result[i]['node'].coverImage.large}">`;
+                        animeImageLink.href = `anime_info/${result[i]['node'].id}`
+                        element.appendChild(animeImageLink);
+
+                        let p = document.createElement('p');
+                        p.innerHTML = title;
+                        element.appendChild(p);
+
+                        let staffRole = document.createElement('p');
+                        staffRole.className = 'staff-role'
+                        staffRole.innerHTML = result[i]['staffRole'];
+                        element.appendChild(staffRole);
+
+                        let container = document.createElement('div');
+                        container.className = 'anime-container';
+
+                        container.appendChild(element);
+
+                        container.appendChild(popUpStuff);
+
+                        div.appendChild(container);
+
+                        let colourIndex = Math.floor((Math.random() * 3))
+
+                        colour[colourIndex] += 4
+
+                        if (colour[colourIndex] > 254) {
+                            colour[colourIndex] = 0
+                        }
+
+                        animesShown.push(result[i]['node']['id'])
+                    }
+                }
+            }
+
+          });
+    }
+
+    function searchCharacters(replaceSearch) {
+        let div = document.getElementsByClassName('main-page-grid-container')[0];
+
+        if (replaceSearch) {
+            div.replaceChildren();
+            pageNumber = 1;
+            rank = 0
+            colour = [239, 93, 96]
+            animesShown = []
+        } else {
+            pageNumber++;
+        }
+        if (requestInProcess) {
+            if (replaceSearch) {
+                backedUpRequest = true;
+            }
+            return;
+        }
+
+        const sortBy = document.getElementById("sort-option-cat").value + document.getElementById("sort-option-order").value;
+        console.log(sortBy)
+
+        const dataToSend = {
+            id: {{id}},
+            search: document.getElementById("search").value,
+            pageNumber: pageNumber,
+            sortBy: sortBy,
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '/search_staff_characters',
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(dataToSend),
+
+            success: function(result){
+                console.log(result)
+                pageNumber = result['page']
+                result = result['media_list']
+
+                console.log(result)
+                hexCodesUsed = []
+                for (let i = 0; i < result.length; i++) {
+                    if (result[i]['node']['id'] == animesShown[animesShown.length - 1]) {
+                        let animeContainers = document.getElementsByClassName("anime-container")
+                        console.log(animeContainers[animeContainers.length - 1])
+
+                        let staffRole = document.createElement('p');
+                        staffRole.className = 'staff-role'
+                        staffRole.innerHTML = result[i]['staffRole'];
+
+                        animeContainers[animeContainers.length - 1].appendChild(staffRole)
+                    } else {
+                        rank++
+                        let ranking = rank;
+
+                        //let classes = document.getElementsByClassName('item'); 
+                        //let endpoint = classes[classes.length - 1];
+                        let element = document.createElement('div');
+                        let title = '';
+                        element.className = 'item anime';
+
+                        if (result[i]['node'].title.english !== null) {
+                            title = result[i]['node'].title.english;
+                        } else if (result[i]['node'].title.romaji !== null) {
+                            title = result[i]['node'].title.romaji;
+                        } else {
+                            title = result[i]['node'].title.native;
+                            console.log(result[i]['node'].title)
+                        }
+
+                        element.addEventListener("onload", function() {replaceLoadingClass(rank - 1)});
+
+
+                        let popUpStuff = document.createElement('div');
+                        popUpStuff.className = 'pop-up-information';
+                        popUpStuff.innerHTML = `<p>${title}</p>
+                                                <p>Popularity: ${result[i]['node'].popularity}</p>
+                                                <p>Score: ${result[i]['node'].averageScore}%</p>
+                                                <p>Favourites: ${result[i]['node'].favourites}</p>
+                                                <p>${result[i]['node'].format} ${result[i]['node'].episodes} Episodes</p>
+                                                <a href='anime_info/${result[i]['node'].id}')> View More</a>`
+
+                        let rank_number = document.createElement('div');
+                        rank_number.className = 'rank_number';
+                        rank_number.innerHTML = ranking
+                        rank_number.style.backgroundColor = `rgb(${colour[0]}, ${colour[1]}, ${colour[2]})`;
+
+                        if (ranking < 1000) {
+                            rank_number.style.width = "1.5em";
+                            rank_number.style.height = "1.5em";
+                        } else {
+                            rank_number.style.width = "2em";
+                            rank_number.style.height = "2em";
+                        }
+
+                        element.appendChild(rank_number);
+
+                        let animeImageLink = document.createElement('a');
+                        animeImageLink.innerHTML = `<img src="${result[i]['node'].coverImage.large}">`;
+                        animeImageLink.href = `anime_info/${result[i]['node'].id}`
+                        element.appendChild(animeImageLink);
+
+                        let p = document.createElement('p');
+                        p.innerHTML = title;
+                        element.appendChild(p);
+
+                        let staffRole = document.createElement('p');
+                        staffRole.className = 'staff-role'
+                        staffRole.innerHTML = result[i]['staffRole'];
+                        element.appendChild(staffRole);
+
+                        let container = document.createElement('div');
+                        container.className = 'anime-container';
+
+                        container.appendChild(element);
+
+                        container.appendChild(popUpStuff);
+
+                        div.appendChild(container);
+
+                        let colourIndex = Math.floor((Math.random() * 3))
+
+                        colour[colourIndex] += 4
+
+                        if (colour[colourIndex] > 254) {
+                            colour[colourIndex] = 0
+                        }
+
+                        animesShown.push(result[i]['node']['id'])
+                    }
+                }
+            }
+
+          });
+    }
+
+    function replaceLoadingClass(index) {
+        console.log(document.getElementsByClassName('item anime'))
+        document.getElementsByClassName('item anime')[index].classList.remove('image-loading');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        getSearchInfo(true);
+    }, false);
+</script>
+    
+{% endblock %}
